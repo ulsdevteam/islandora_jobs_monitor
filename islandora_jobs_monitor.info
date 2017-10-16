@@ -1,0 +1,6 @@
+name = Islandora Jobs Stack Monitor
+description = To gather and report health and job processing for relevant jobs servers.
+package = Islandora Tools
+version = 7.x-1.6
+core = 7.x
+dependencies[] = islandora

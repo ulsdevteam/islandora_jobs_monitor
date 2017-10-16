@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * @file
+ * Defines all the hooks this module implements.
+ *
+ * islandora_jobs_monitor.module: defines paths as entry points and acts
+ *  as a hub for dispatching tasks to other modules.
+ *
+ * This file is a utility module for use with Islandora.
+ *
+ * WARNING: Part of this module does not adhere to standard drupal database
+ * settings.  This can be installed as either a master or a worker or even as
+ * a drupal-free-worker in the case of the cron_fedora_health.php script.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with the program.  If not, see <http ://www.gnu.org/licenses/>.
+ */
+
+// Permissions.
+define('ISLANDORA_USE_STACK_MONITOR', 'use islandora jobs monitor');
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_jobs_monitor_menu() {
+  $menu = array(
+    'admin/islandora/islandora_job_monitor' => array(
+      'title' => 'Islandora Jobs Monitor',
+      'description' => 'To gather and report health and job processing for relevant jobs servers.',
+      'page callback' => array('islandora_jobs_monitor_page'),
+      'file' => 'includes/islandora_jobs_monitor.page.inc',
+      'access arguments' => array(ISLANDORA_USE_STACK_MONITOR),
+    ),
+  );
+  
+  return $menu;
+}
+
+/**
+ * Implements hook_presprocess_theme().
+ *
+ * This code will remove the sidebar and will add the stylesheet and js needed
+ * for the report display.
+ */
+function islandora_jobs_monitor_preprocess_page(&$vars) {
+  $item = menu_get_item();
+  if (is_array($item)) {
+    if ($item['path'] == 'admin/islandora/islandora_job_monitor') {
+      $module_path = drupal_get_path('module', 'islandora_jobs_monitor');
+      drupal_add_css($module_path . '/css/islandora_jobs_monitor.css');
+      drupal_add_js($module_path . '/js/islandora_jobs_monitor.js');
+      $vars['sidebar'] = array();
+    }
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function islandora_jobs_monitor_theme() {
+  return array(
+    'islandora_jobs_monitor_page' => array(
+      'template' => 'theme/islandora-jobs-monitor-page',
+      'variables' => array(
+        'current_report' => '',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_permission().
+ */
+function islandora_jobs_monitor_permission() {
+  return array(
+    ISLANDORA_USE_STACK_MONITOR => array(
+      'title' => t('Use the Islandora Jobs Stack Monitor'),
+      'description' => t('User can use the Islandora Jobs Stack Monitor.'),
+    ),
+  );
+}
