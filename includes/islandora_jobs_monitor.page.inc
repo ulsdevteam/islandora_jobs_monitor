@@ -12,9 +12,28 @@
  *   Page markup html.
  */
 function islandora_jobs_monitor_page() {
-  $current_report =  islandora_jobs_monitor_get_report();
+  module_load_include('inc', 'islandora_jobs_monitor', 'includes/db');
+  $hosts = islandora_jobs_monitor_get_all_hosts();
+
+  // Loop through the hosts data and call appropriate theme code to add
+  // to themed_hosts array.
+  $themed_hosts = array();
+  foreach ($hosts as $host) {
+    $worker = $host['is_worker'];
+    // Unset this either way, it does not need to be used in the themed output.
+    unset($host['is_worker']);
+    if ($worker) {
+      $themed_hosts['workers'][] = theme('islandora_jobs_monitor_themed_worker', array('host_record' => $host));
+    }
+    else {
+      $themed_hosts['master'][] = theme('islandora_jobs_monitor_themed_master', array('host_record' => $host));
+    }
+  }
+
+  $current_report = islandora_jobs_monitor_get_jobs_report();
 
   return theme('islandora_jobs_monitor_page', array(
+      'themed_hosts' => $themed_hosts,
       'current_report' => $current_report,
   ));
 }
@@ -25,41 +44,10 @@ function islandora_jobs_monitor_page() {
  * @return array
  *   'stats_table': Drupal themed table for stats report in HTML markup.
  */
-function islandora_jobs_monitor_get_report() {
-  // Get the list of available hosts.
-
-  $query = db_select('islandora_stats_contentmodel_counts', 'mc');
-  // Add a filter for last year...
-  $query->where('mc.date >= DATE_SUB(NOW(), INTERVAL 1 YEAR)');
-  $query->innerJoin('islandora_stats_models', 'm', 'm.model_id = mc.model_id');
-  $query->addField('mc', 'date');
-  $query->addField('m', 'model_desc');
-  $query->addField('mc', 'pitt_count');
-  $query->addField('mc', 'nonpitt_count');
-  $query->orderBy('mc.date', 'DESC');
-  $query->range(0, 500);
-  $results = $query->execute()->fetchAll();
-  $rows = array();
-  $max_y = 0;
-  $max_x = 0;
-  $model_colors = array();
-  $models = array();
-  foreach ($results as $result_obj) {
-    if ($result_obj->pitt_count > $max_y) {
-      $max_y = $result_obj->pitt_count;
-    }
-    $rows[] = array(
-      'date' => $result_obj->date,
-      'model' => $result_obj->model_desc,
-      'pitt_count' => $result_obj->pitt_count,
-      'nonpitt_count' => $result_obj->nonpitt_count,
-    );
-    $max_x++;
-  }
-
-  $error_log = islandora_jobs_monitor_get_error_log();
-  $headers = array('Date', 'Model', 'Pitt Count', 'Non-Pitt Count');
-  $stats_table = '<h3>TEST ACCESS</h3><pre class="error_log">' . $error_log . "</textarea>" .
+function islandora_jobs_monitor_get_jobs_report() {
+  $headers = array('Worker', 'PID', 'Worker Function Name', 'Job Started');
+  $rows = islandora_jobs_monitor_get_jobs_rows();
+  $stats_table = '<h3>Jobs Records</h3>' .
           theme('table', array('header' => $headers, 'rows' => $rows));
 
   return $stats_table;

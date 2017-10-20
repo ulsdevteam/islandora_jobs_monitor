@@ -1,7 +1,5 @@
 .monitor_report {
-    border: 2px solid #ccc;
     margin: 8px;
-    border-radius: 8px;
 }
 
 .error_log {
@@ -15,4 +13,33 @@
 
 .error {
     color: #ff0000;
+}
+
+.workers, .masters, .monitor_report {
+    clear: both;
+}
+
+.workers label, .masters label {
+    font-size: larger;
+    font-weight: bold;
+}
+
+.worker, .master {
+    width: 48%;
+    float: left;
+    font-size: smaller;
+    margin: 2px;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: #eee;    
+}
+
+.div_label, .div_value {
+    float: left;
+    clear: top;
+}
+
+.div_label {
+    width: 26%;
+    font-weight: bold;
 }

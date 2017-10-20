@@ -37,11 +37,24 @@ function islandora_jobs_monitor_menu() {
   $menu = array(
     'admin/islandora/islandora_job_monitor' => array(
       'title' => 'Islandora Jobs Monitor',
+      'description' => 'Change the settings for Islandora Jobs Monitor.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('islandora_jobs_monitor_admin_form'),
+      'access arguments' => array(ISLANDORA_MANAGE_PROPERTIES),
+      'file' => 'includes/admin.form.inc',
+    ),
+    'islandora/islandora_job_monitor' => array(
+      'title' => 'Islandora Jobs Monitor',
       'description' => 'To gather and report health and job processing for relevant jobs servers.',
       'page callback' => array('islandora_jobs_monitor_page'),
       'file' => 'includes/islandora_jobs_monitor.page.inc',
       'access arguments' => array(ISLANDORA_USE_STACK_MONITOR),
     ),
+    'islandora/islandora_job_monitor/api/serverhealth' => array(
+      'title' => 'Islandora Jobs Monitor API endpoint for server health',
+      'file' => 'includes/api.inc',
+      'page callback' => array('islandora_jobs_monitor_api_serverhealth'),
+    )
   );
   
   return $menu;
@@ -56,7 +69,7 @@ function islandora_jobs_monitor_menu() {
 function islandora_jobs_monitor_preprocess_page(&$vars) {
   $item = menu_get_item();
   if (is_array($item)) {
-    if ($item['path'] == 'admin/islandora/islandora_job_monitor') {
+    if ($item['path'] == 'islandora/islandora_job_monitor') {
       $module_path = drupal_get_path('module', 'islandora_jobs_monitor');
       drupal_add_css($module_path . '/css/islandora_jobs_monitor.css');
       drupal_add_js($module_path . '/js/islandora_jobs_monitor.js');
@@ -73,7 +86,20 @@ function islandora_jobs_monitor_theme() {
     'islandora_jobs_monitor_page' => array(
       'template' => 'theme/islandora-jobs-monitor-page',
       'variables' => array(
+        'themed_hosts' => '',
         'current_report' => '',
+      ),
+    ),
+    'islandora_jobs_monitor_themed_worker' => array(
+      'template' => 'theme/islandora-jobs-monitor-themed-worker',
+      'variables' => array(
+        'host_record' => '',
+      ),
+    ),
+    'islandora_jobs_monitor_themed_master' => array(
+      'template' => 'theme/islandora-jobs-monitor-themed-master',
+      'variables' => array(
+        'host_record' => '',
       ),
     ),
   );
@@ -89,4 +115,73 @@ function islandora_jobs_monitor_permission() {
       'description' => t('User can use the Islandora Jobs Stack Monitor.'),
     ),
   );
+}
+
+/**
+ * Helper function to connect to the bigfoot database using the site's settings.php file.
+ */
+function islandora_jobs_monitor_get_databaselink($db_section = 'default') {
+  global $databases;
+  // Use the settings.php file for this install.
+  $settings_file = variable_get('islandora_jobs_monitor_settings_file', '/var/www/html/drupal_gamera_sandbox/sites/gamera.library.pitt.edu/settings.php');
+  if (!$settings_file) {
+    drupal_set_message('The settings file value has not been set.  It is needed in order ' .
+      'to be able to run the drush commands with the appropriate include path. ' .
+      l('Configure Islandora Jobs Monitor here', 'admin/islandora/islandora_jobs_monitor') . '.');
+    return NULL;
+  }
+  require_once($settings_file);
+
+  if (count($databases) < 1 || !array_key_exists($db_section, $databases['default'])) {
+    die('Database settings not found at ' . $settings_file . '.');
+  }
+
+  $db_host = $databases['default'][$db_section]['host'];
+  $db_user = $databases['default'][$db_section]['username'];
+  $db_pass = $databases['default'][$db_section]['password'];
+  $db_name = $databases['default'][$db_section]['database'];
+
+  $link = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
+  if (mysqli_connect_errno()) {
+    printf("Connect failed: %s\n", mysqli_connect_error());
+    exit();
+  }
+
+  return $link;
+}
+
+function islandora_jobs_monitor_sql_error_die($link, $sql) {
+  $message  = 'Invalid query: ' . mysqli_error($link) . "<br>";
+  $message .= 'Query: <pre>' . $sql ."</pre>";
+  $bt = debug_backtrace();
+  $variables = array('@sql' => $sql, '@backtrace' => $bt);
+  watchdog('islandora_jobs_monitor', 'There was an error executing a database query.  The sql = @sql.  Debug backtrace @backtrace', $variables, WATCHDOG_ERROR);
+  die($message);
+}
+
+/**
+ * Implements islandora_job_submitted().
+ * 
+ * This will take the payload and create a record that matches the current 
+ * hostname particular to the worker that has picked up the job.
+ */
+function islandora_jobs_monitor_islandora_job_started($payload) {
+  module_load_include('inc', 'islandora_jobs_monitor', 'includes/db');
+  // Use the $jobname and the ip_address to create a record in the
+  // `host_gearman_job` table that matches the server that has this ip_address.
+  $server_id = islandora_jobs_monitor_get_server_id_of_ip($_SERVER['SERVER_ADDR']);
+  if ($server_id) {
+    $payload_as_arr = json_decode($payload, true);
+    $jobname = $payload_as_arr['func'];
+    $args = $payload_as_arr['args'];
+    if (count($args) > 0) {
+      $pid = $args[0];
+    }
+
+    islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname);
+  }
+  else {
+    $variables = array('@ip_address' => $_SERVER['SERVER_ADDR']);
+    watchdog('islandora_jobs_monitor', 'There was no record in `islandora_jobs_monitor`.`servers` for ip_address = "@ip_address."', $variables, WATCHDOG_ERROR);
+  }
 }
