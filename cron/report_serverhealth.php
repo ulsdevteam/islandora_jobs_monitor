@@ -64,18 +64,30 @@ if (!$db_selected) {
 /**
  * Step 2. Get CPU % and Memory % and update `host_server_health`.
  */
-$cpu = 12.1;
-$memory = 5.1;
+
+$cpu = rand(1,20) . '.' . rand(0,99);
+$memory = rand(1,20) . '.' . rand(0,99);
 
 /**
  * Step 3. Update the record in `host_error_log` (if the file is newer than the record).
  */
+$host_error_log = file_get_contents('/tmp/error_log_last100.txt');
+// Save this value directly to the `host_error_log` table
+$host_error_log_val = base64_encode($host_error_log);
 
 /**
  * Step 4. Post the results to the server that is reporting (specified by the
  *         config value for server_monitor.
  */
-file_get_contents('http://dev.gamera.library.pitt.edu/islandora/islandora_job_monitor/api/serverhealth/?cpu=' . $cpu . '&memory=' . $memory);
+
+// file_get_contents to the api endpoint causes 20 redirects and an error.
+
+// I think that the "ip_login" module does not pass any posted variables to the 
+// redirected-to page and loses them when the /user login page is processed.  The
+// easy way around this is to post the values as $_GET 
+$command = "wget 'http://dev.gamera.library.pitt.edu/islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $memory . "'";
+$output = array();
+exec($command, $output, $return);
 
 
 exit(0);
