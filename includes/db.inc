@@ -110,3 +110,20 @@ function islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname) {
 
   mysqli_close($link);
 }
+
+
+function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_values) {
+  $server_id = islandora_jobs_monitor_get_server_id_of_ip($ip_address);
+  if ($server_id) {
+    $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
+    $cpu_percentage = isset($save_values['cpu']) ? $save_values['cpu'] : 0;
+    $memory_percentage = isset($save_values['memory']) ? $save_values['memory'] : 0;
+    $error_log_errors_in_last_100 = isset($save_values['last_100_errors_count']) ? $save_values['last_100_errors_count'] : 0;
+
+    $seconds_since_hour = date('i') * 60 + date('s');
+    $sql = "INSERT INTO `host_server_health` (`server_id`, `seconds_since_hour`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`) VALUES (" .
+        $server_id . ", " . $seconds_since_hour . ", " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", now())";
+    $result = mysqli_query($link, $sql);
+    mysqli_close($link);
+  }
+}

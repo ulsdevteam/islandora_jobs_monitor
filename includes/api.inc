@@ -9,19 +9,23 @@
  * This will handle /islandora/islandora_job_monitor/api/serverhealth posts.
  */
 function islandora_jobs_monitor_api_serverhealth() {
-  $args = func_get_args();
-  file_put_contents('/tmp/log1', 'args
-' . print_r($args, true));
-
-
   global $user;
 
-  file_put_contents('/tmp/log1', 'user 
-' . print_r($user, true), FILE_APPEND);
-
-  
-  file_put_contents('/tmp/log1', 'request
-' . print_r($_REQUEST, true), FILE_APPEND);
-
-  echo "accessed";
+  // The server_ip is the same as the user record's hostname.
+  $ip_address = $user->hostname;
+  $args = func_get_arg();
+  if (count($args) > 0) {
+    $get_args = $args[0];
+    // get_args should be something like: ?cpu=12.1&memory=5.1
+    $kv_pairs = explode("&", str_replace("?", "", $get_args));
+    if (count($kv_pairs) > 0) {
+      module_load_include('inc', 'islandora_jobs_monitor', 'includes/db');
+      $save_values = array();
+      foreach ($kv_pairs as $kv_pair) {
+        @list($key, $value) = explode("=", $kv_pair, 2);
+        $save_values[$key] = $value;
+      }
+      islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_values);
+    }
+  }
 }
