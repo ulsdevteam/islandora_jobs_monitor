@@ -29,6 +29,7 @@
 
 // Permissions.
 define('ISLANDORA_USE_STACK_MONITOR', 'use islandora jobs monitor');
+define('ISLANDORA_JOBS_MONITOR_ACCESS_API', 'use islandora jobs monitor pushdata api');
 
 /**
  * Implements hook_menu().
@@ -54,6 +55,9 @@ function islandora_jobs_monitor_menu() {
       'title' => 'Islandora Jobs Monitor API endpoint for server health',
       'file' => 'includes/api.inc',
       'page callback' => array('islandora_jobs_monitor_api_serverhealth'),
+      'type' => MENU_CALLBACK,
+      'access callback' => 'islandora_jobs_monitor_access_api_callback',
+      'access arguments' => array(ISLANDORA_JOBS_MONITOR_ACCESS_API),
     )
   );
   
@@ -73,7 +77,7 @@ function islandora_jobs_monitor_preprocess_page(&$vars) {
       $module_path = drupal_get_path('module', 'islandora_jobs_monitor');
       drupal_add_css($module_path . '/css/islandora_jobs_monitor.css');
       drupal_add_js($module_path . '/js/islandora_jobs_monitor.js');
-      $vars['sidebar'] = array();
+      $vars['page']['sidebar'] = array();
     }
   }
 }
@@ -113,6 +117,10 @@ function islandora_jobs_monitor_permission() {
     ISLANDORA_USE_STACK_MONITOR => array(
       'title' => t('Use the Islandora Jobs Stack Monitor'),
       'description' => t('User can use the Islandora Jobs Stack Monitor.'),
+    ),
+    ISLANDORA_JOBS_MONITOR_ACCESS_API => array(
+      'title' => t('Use the Islandora Jobs Stack Monitor Pushdata API'),
+      'description' => t('User can use send data to the Islandora Jobs Monitor Pushdata API.'),
     ),
   );
 }
@@ -184,4 +192,9 @@ function islandora_jobs_monitor_islandora_job_started($payload) {
     $variables = array('@ip_address' => $_SERVER['SERVER_ADDR']);
     watchdog('islandora_jobs_monitor', 'There was no record in `islandora_jobs_monitor`.`servers` for ip_address = "@ip_address."', $variables, WATCHDOG_ERROR);
   }
+}
+
+function islandora_jobs_monitor_access_api_callback() {
+  global $user;
+  return (user_access(ISLANDORA_JOBS_MONITOR_ACCESS_API, $user));
 }

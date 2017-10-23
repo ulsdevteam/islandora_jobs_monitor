@@ -64,6 +64,8 @@ if (!$db_selected) {
 /**
  * Step 2. Get CPU % and Memory % and update `host_server_health`.
  */
+$cpu = 12.1;
+$memory = 5.1;
 
 /**
  * Step 3. Update the record in `host_error_log` (if the file is newer than the record).
@@ -73,6 +75,8 @@ if (!$db_selected) {
  * Step 4. Post the results to the server that is reporting (specified by the
  *         config value for server_monitor.
  */
+file_get_contents('http://dev.gamera.library.pitt.edu/islandora/islandora_job_monitor/api/serverhealth/?cpu=' . $cpu . '&memory=' . $memory);
+
 
 exit(0);
 
