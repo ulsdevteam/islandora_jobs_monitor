@@ -13,9 +13,9 @@ function islandora_jobs_monitor_api_serverhealth() {
 
   // The server_ip is the same as the user record's hostname.
   $ip_address = $user->hostname;
-  $args = func_get_arg();
+  $args = func_get_args();
   if (count($args) > 0) {
-    $get_args = $args[0];
+    $get_args = urldecode($args[0]);
     // get_args should be something like: ?cpu=12.1&memory=5.1
     $kv_pairs = explode("&", str_replace("?", "", $get_args));
     if (count($kv_pairs) > 0) {

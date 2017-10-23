@@ -21,8 +21,12 @@ function islandora_jobs_monitor_get_all_hosts($all_fields = false) {
 
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
 
-  $sql = "SELECT s.name, s.is_worker, s.hostname, s.ip_address " .
-         "FROM servers s LEFT OUTER JOIN host_error_log e ON (e.server_id = s.server_id)";
+  $sql = "SELECT s.name, s.is_worker, s.hostname, s.ip_address, " .
+         " (SELECT h.cpu_percentage FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY seconds_since_hour DESC LIMIT 1) `cpu_percentage`, " .
+         " (SELECT h.memory_percentage FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY seconds_since_hour DESC LIMIT 1) `memory_percentage`, " .
+         " (SELECT h.error_log_errors_in_last_100 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY seconds_since_hour DESC LIMIT 1) `error_log_errors_in_last_100` " .
+         "FROM servers s " . 
+         "LEFT OUTER JOIN host_error_log e ON (e.server_id = s.server_id)";
   $result = mysqli_query($link, $sql);
   if (!$result) {
     islandora_jobs_monitor_sql_error_die($link, $sql);
@@ -79,10 +83,10 @@ function islandora_jobs_monitor_get_server_id_of_ip($ip_address) {
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
   $server_id = 0;
   
-  $query = "SELECT server_id FROM servers WHERE ip_address = '" . islandora_jobs_monitor_safe_qstring($link, $ip_address) . "'";
+  $sql = "SELECT server_id FROM servers WHERE ip_address = '" . islandora_jobs_monitor_safe_qstring($link, $ip_address) . "'";
   $result = mysqli_query($link, $sql);
   if (!$result) {
-    upitt_workflow_sql_error_die($link, $sql);
+    islandora_jobs_monitor_sql_error_die($link, $sql);
   }
   if ($row = mysqli_fetch_assoc($result)) {
     $server_id = $row['server_id'];
@@ -122,7 +126,8 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
 
     $seconds_since_hour = date('i') * 60 + date('s');
     $sql = "INSERT INTO `host_server_health` (`server_id`, `seconds_since_hour`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`) VALUES (" .
-        $server_id . ", " . $seconds_since_hour . ", " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", now())";
+        $server_id . ", " . $seconds_since_hour . ", " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ")";
+error_log($sql);
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }
