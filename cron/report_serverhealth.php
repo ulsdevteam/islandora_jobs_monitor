@@ -44,7 +44,7 @@ $server_monitor = get_config_value('islandora_jobs_monitor', 'server_monitor');
 $db_host = get_config_value('mysql','host');
 $db_user = get_config_value('mysql','username');
 $db_pass = get_config_value('mysql','password');
-$db_name = get_config_value('mysql','database');
+$db_name = get_config_value('islandora_jobs_monitor', 'jobs_database');
 $link = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
 if (!$link) {
     die('Not connected : ' . mysql_error());
@@ -77,23 +77,32 @@ $host_error_log_errors_count = substr_count(strtolower($host_error_log), 'error'
 $sql = "REPLACE INTO host_error_log (`server_id`, `error_log_last_100_lines`) VALUES (" . 
        $server_id . ", '" . mysqli_real_escape_string($link, addslashes($host_error_log)) . "')";
 $result = mysqli_query($link, $sql);
-@mysqli_close($link);
 
 
 /**
  * Step 4. Post the results to the server that is reporting (specified by the
  *         config value for server_monitor.
  */
-
-// file_get_contents to the api endpoint causes 20 redirects and an error.
-
 // I think that the "ip_login" module does not pass any posted variables to the 
 // redirected-to page and loses them when the /user login page is processed.  The
 // easy way around this is to post the values as $_GET 
-$command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&errors=" . $host_error_log_errors_count . "' >/dev/null 2>&1";
-$output = array();
-exec($command, $output, $return);
+if ($server_id > 0) {
+  $command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&errors=" . $host_error_log_errors_count . "' >/dev/null 2>&1";
+  $output = array();
+  exec($command, $output, $return);
+}
+else {
+  // this is gamera -- must save the record with SQL.
+  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`) VALUES (" .
+        $server_id . ", now(), " . $cpu . ", " . $mem . ", " . $host_error_log_errors_count . ")";
+  $result = mysqli_query($link, $sql);
+  if (!$result) {
+    die('Invalid query: ' . mysqli_error($link) );
+  }
+die('inserted using ' . $sql);
+}
 
+@mysqli_close($link);
 
 exit(0);
 
