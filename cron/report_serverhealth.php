@@ -69,15 +69,14 @@ $mem = round($get_mem[2]/$get_mem[1], 5);
 $command = 'mpstat | grep all | awk \'{print $12}\'';
 $cpu = shell_exec($command);
 
-/* $cpu = rand(1,20) . '.' . rand(0,99);
-$memory = rand(1,20) . '.' . rand(0,99); */
-
 /**
  * Step 3. Update the record in `host_error_log` (if the file is newer than the record).
  */
-$host_error_log = file_get_contents('/tmp/error_log_last100.txt');
+$host_error_log = strtolower(file_get_contents('/tmp/error_log_last100.txt'));
 // Save this value directly to the `host_error_log` table
-$host_error_log_val = base64_encode($host_error_log);
+$host_error_log_errors_count = substr_count($host_error_log, 'error');
+
+
 
 /**
  * Step 4. Post the results to the server that is reporting (specified by the
@@ -89,7 +88,7 @@ $host_error_log_val = base64_encode($host_error_log);
 // I think that the "ip_login" module does not pass any posted variables to the 
 // redirected-to page and loses them when the /user login page is processed.  The
 // easy way around this is to post the values as $_GET 
-$command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "' >/dev/null 2>&1";
+$command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&errors=" . $host_error_log_errors_count . "' >/dev/null 2>&1";
 $output = array();
 exec($command, $output, $return);
 
