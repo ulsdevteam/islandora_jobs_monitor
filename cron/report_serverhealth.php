@@ -99,7 +99,6 @@ else {
   if (!$result) {
     die('Invalid query: ' . mysqli_error($link) );
   }
-die('inserted using ' . $sql);
 }
 
 @mysqli_close($link);

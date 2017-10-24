@@ -45,7 +45,7 @@ function islandora_jobs_monitor_get_health_metrics($server_id) {
   
   $sql = "SELECT timestamp, cpu_percentage `cpu_percentages`, memory_percentage `memory_percentages` " .
          "FROM host_server_health WHERE server_id = " . $server_id . " " .
-         "ORDER BY timestamp ASC";
+         "ORDER BY timestamp ASC LIMIT 20";
   $result = mysqli_query($link, $sql);
   if (!$result) {
     islandora_jobs_monitor_sql_error_die($link, $sql);
