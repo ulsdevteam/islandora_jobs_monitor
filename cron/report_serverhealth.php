@@ -85,7 +85,7 @@ $host_error_log_val = base64_encode($host_error_log);
 // I think that the "ip_login" module does not pass any posted variables to the 
 // redirected-to page and loses them when the /user login page is processed.  The
 // easy way around this is to post the values as $_GET 
-$command = "wget 'http://dev.gamera.library.pitt.edu/islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $memory . "'";
+$command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $memory . "' >/dev/null 2>&1";
 $output = array();
 exec($command, $output, $return);
 
