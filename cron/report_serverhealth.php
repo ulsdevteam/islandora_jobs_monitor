@@ -59,14 +59,18 @@ if (!$db_selected) {
  * Step 1. Remove any `host_gearman_job` or `host_server_health` records for
  *         this server that are more than 1 hr old.
  */
-
+$exec_free = explode("\n", trim(shell_exec('free')));
+$get_mem = preg_split("/[\s]+/", $exec_free[1]);
+$mem = round($get_mem[2]/$get_mem[1], 5);
 
 /**
  * Step 2. Get CPU % and Memory % and update `host_server_health`.
  */
+$command = 'mpstat | grep all | awk \'{print $12}\'';
+$cpu = shell_exec($command);
 
-$cpu = rand(1,20) . '.' . rand(0,99);
-$memory = rand(1,20) . '.' . rand(0,99);
+/* $cpu = rand(1,20) . '.' . rand(0,99);
+$memory = rand(1,20) . '.' . rand(0,99); */
 
 /**
  * Step 3. Update the record in `host_error_log` (if the file is newer than the record).
