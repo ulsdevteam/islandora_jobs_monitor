@@ -45,14 +45,9 @@ $db_host = get_config_value('mysql','host');
 $db_user = get_config_value('mysql','username');
 $db_pass = get_config_value('mysql','password');
 $db_name = get_config_value('mysql','database');
-$link = mysql_connect($db_host, $db_user, $db_pass);
+$link = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
 if (!$link) {
     die('Not connected : ' . mysql_error());
-}
-
-$db_selected = mysql_select_db($db_name, $link);
-if (!$db_selected) {
-    die ('Can\'t use ' . $db_name . ' : ' . mysql_error());
 }
 
 /**
@@ -70,11 +65,16 @@ $command = 'mpstat | grep all | awk \'{print $12}\'';
 $cpu = shell_exec($command);
 
 /**
- * Step 3. Update the record in `host_error_log` (if the file is newer than the record).
+ * Step 3. Update the record in `host_error_log` (if the file is newer than the record)
+ *         and save this error_log section to the database.
  */
-$host_error_log = strtolower(file_get_contents('/tmp/error_log_last100.txt'));
+$host_error_log = file_get_contents('/tmp/error_log_last100.txt');
 // Save this value directly to the `host_error_log` table
-$host_error_log_errors_count = substr_count($host_error_log, 'error');
+$host_error_log_errors_count = substr_count(strtolower($host_error_log), 'error');
+$sql = "REPLACE INTO host_error_log (`server_id`, `error_log_last_100_lines`) VALUES (" . 
+       $server_id . ", '" . mysqli_real_escape_string($link, addslashes($host_error_log)) . "')";
+$result = mysqli_query($link, $sql);
+@mysqli_close($link);
 
 
 
