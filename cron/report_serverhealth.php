@@ -62,9 +62,9 @@ mysqli_query($link, $sql);
  */
 $exec_free = explode("\n", trim(shell_exec('free')));
 $get_mem = preg_split("/[\s]+/", $exec_free[1]);
-$mem = trim(round($get_mem[2]/$get_mem[1], 5));
+$mem = trim(round($get_mem[2]/$get_mem[1], 3));
 
-$command = 'mpstat | grep all | awk \'{print $12}\'';
+$command = 'mpstat | grep all | awk \'{print 100-$12}\'';
 $cpu = trim(shell_exec($command));
 
 /**

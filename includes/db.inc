@@ -21,11 +21,7 @@ function islandora_jobs_monitor_get_all_hosts($all_fields = false) {
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
 
   $sql = "SELECT s.server_id, s.name, s.is_worker, s.hostname, s.ip_address, " .
-
-         " (SELECT h.cpu_percentage FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `cpu_percentage`, " .
-         " (SELECT h.memory_percentage FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `memory_percentage`, " .
-         " (SELECT h.error_log_errors_in_last_100 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `error_log_errors_in_last_100` " .
-
+         " (SELECT h.error_log_errors_in_last_100 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `errors_in_last_100` " .
          "FROM servers s " .
          "LEFT OUTER JOIN host_error_log e ON (e.server_id = s.server_id)";
   $result = mysqli_query($link, $sql);

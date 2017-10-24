@@ -25,15 +25,18 @@ function islandora_jobs_monitor_page() {
     // Unset these either way, they do not need to be used in the themed output.
     unset($host['server_id']);
     unset($host['is_worker']);
+    $keys = array_keys($metrics['cpu_percentages']);
+    $first_key = array_pop($keys);
+
     if ($worker) {
       $themed_hosts['workers'][] = theme('islandora_jobs_monitor_themed_worker', array(
         'host_record' => $host,
         'cpu_values' => theme('islandora_jobs_monitor_themed_0_to_100_metrics', array(
-          'label' => 'CPU',
+          'label' => 'CPU (' . ($first_key ? $metrics['cpu_percentages'][$first_key] . '%' : '?' ) . ')',
           'values' => $metrics['cpu_percentages'],
         )),
         'memory_values' => theme('islandora_jobs_monitor_themed_0_to_100_metrics', array(
-          'label' => 'Memory',
+          'label' => 'Memory (' . ($first_key ? $metrics['memory_percentages'][$first_key] . '%' : '?' ) . ')',
           'values' => $metrics['memory_percentages'],
         )),
       ));

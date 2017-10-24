@@ -23,7 +23,7 @@ function islandora_jobs_monitor_api_serverhealth() {
       module_load_include('inc', 'islandora_jobs_monitor', 'includes/db');
       $save_values = array();
       foreach ($kv_pairs as $kv_pair) {
-        @list($key, $value) = explode("=", $kv_pair, 2);
+        @list($key, $value) = explode("=", $kv_pair, 3);
         $save_values[$key] = $value;
       }
       islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_values);
