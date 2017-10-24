@@ -56,13 +56,13 @@ if (!$link) {
  */
 $exec_free = explode("\n", trim(shell_exec('free')));
 $get_mem = preg_split("/[\s]+/", $exec_free[1]);
-$mem = round($get_mem[2]/$get_mem[1], 5);
+$mem = trim(round($get_mem[2]/$get_mem[1], 5));
 
 /**
  * Step 2. Get CPU % and Memory % and update `host_server_health`.
  */
 $command = 'mpstat | grep all | awk \'{print $12}\'';
-$cpu = shell_exec($command);
+$cpu = trim(shell_exec($command));
 
 /**
  * Step 3. Update the record in `host_error_log` (if the file is newer than the record)
@@ -75,7 +75,6 @@ $sql = "REPLACE INTO host_error_log (`server_id`, `error_log_last_100_lines`) VA
        $server_id . ", '" . mysqli_real_escape_string($link, addslashes($host_error_log)) . "')";
 $result = mysqli_query($link, $sql);
 @mysqli_close($link);
-
 
 
 /**
