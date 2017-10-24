@@ -36,10 +36,34 @@
 
 .div_label, .div_value {
     float: left;
-    clear: top;
 }
 
 .div_label {
+    clear: left;
     width: 26%;
     font-weight: bold;
+}
+
+.cpu_graph, .memory_graph {
+    background-color: #eee;
+}
+
+.value {
+    width: 100%;
+    background-color: #666;
+}
+
+.value_bad {
+    background-color: red;
+}
+.value_good {
+    background-color: green;
+}
+
+.value-wrapper {
+    vertical-align: bottom;
+    
+    width: 3.5%;
+    float: left;
+    line-height:100%    
 }

@@ -16,8 +16,9 @@ function islandora_jobs_monitor_api_serverhealth() {
   $args = func_get_args();
   if (count($args) > 0) {
     $get_args = urldecode($args[0]);
+    list($junk, $keep) = explode("?", $get_args, 2);
     // get_args should be something like: ?cpu=12.1&memory=5.1
-    $kv_pairs = explode("&", str_replace("?", "", $get_args));
+    $kv_pairs = explode("&", $keep);
     if (count($kv_pairs) > 0) {
       module_load_include('inc', 'islandora_jobs_monitor', 'includes/db');
       $save_values = array();

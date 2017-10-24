@@ -18,14 +18,15 @@ function islandora_jobs_monitor_safe_qstring($link, $in) {
  */
 function islandora_jobs_monitor_get_all_hosts($all_fields = false) {
   $hosts = array();
-
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
 
-  $sql = "SELECT s.name, s.is_worker, s.hostname, s.ip_address, " .
-         " (SELECT h.cpu_percentage FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY seconds_since_hour DESC LIMIT 1) `cpu_percentage`, " .
-         " (SELECT h.memory_percentage FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY seconds_since_hour DESC LIMIT 1) `memory_percentage`, " .
-         " (SELECT h.error_log_errors_in_last_100 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY seconds_since_hour DESC LIMIT 1) `error_log_errors_in_last_100` " .
-         "FROM servers s " . 
+  $sql = "SELECT s.server_id, s.name, s.is_worker, s.hostname, s.ip_address, " .
+
+         " (SELECT h.cpu_percentage FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `cpu_percentage`, " .
+         " (SELECT h.memory_percentage FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `memory_percentage`, " .
+         " (SELECT h.error_log_errors_in_last_100 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `error_log_errors_in_last_100` " .
+
+         "FROM servers s " .
          "LEFT OUTER JOIN host_error_log e ON (e.server_id = s.server_id)";
   $result = mysqli_query($link, $sql);
   if (!$result) {
@@ -38,6 +39,30 @@ function islandora_jobs_monitor_get_all_hosts($all_fields = false) {
   mysqli_close($link);
   return $hosts;
 }
+
+function islandora_jobs_monitor_get_health_metrics($server_id) {
+  $rows = array(
+    'cpu_percentages' => array(),
+    'memory_percentages' => array(),
+  );
+  $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
+  
+  $sql = "SELECT timestamp, cpu_percentage `cpu_percentages`, memory_percentage `memory_percentages` " .
+         "FROM host_server_health WHERE server_id = " . $server_id . " " .
+         "ORDER BY timestamp ASC";
+  $result = mysqli_query($link, $sql);
+  if (!$result) {
+    islandora_jobs_monitor_sql_error_die($link, $sql);
+  }
+  while ($row = mysqli_fetch_assoc($result)) {
+    $rows['cpu_percentages'][$row['timestamp']] = $row['cpu_percentages'];
+    $rows['memory_percentages'][$row['timestamp']] = $row['memory_percentages'];
+  }
+
+  mysqli_close($link);
+  return $rows;
+}
+
 
 /**
  * Gets all the jobs rows from the host_gearman_job table.
@@ -124,9 +149,8 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
     $memory_percentage = isset($save_values['memory']) ? $save_values['memory'] : 0;
     $error_log_errors_in_last_100 = isset($save_values['errors']) ? $save_values['errors'] : 0;
 
-    $seconds_since_hour = date('i') * 60 + date('s');
-    $sql = "INSERT INTO `host_server_health` (`server_id`, `seconds_since_hour`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`) VALUES (" .
-        $server_id . ", " . $seconds_since_hour . ", " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ")";
+    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`) VALUES (" .
+        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ")";
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }

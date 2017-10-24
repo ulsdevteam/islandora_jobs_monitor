@@ -98,12 +98,23 @@ function islandora_jobs_monitor_theme() {
       'template' => 'theme/islandora-jobs-monitor-themed-worker',
       'variables' => array(
         'host_record' => '',
+        'cpu_values' => '',
+        'memory_values' => ''
       ),
     ),
     'islandora_jobs_monitor_themed_master' => array(
       'template' => 'theme/islandora-jobs-monitor-themed-master',
       'variables' => array(
         'host_record' => '',
+        'cpu_values' => '',
+        'memory_values' => ''
+      ),
+    ),
+    'islandora_jobs_monitor_themed_0_to_100_metrics' => array(
+      'template' => 'theme/islandora-jobs-monitor-themed-0-to-100-metrics',
+      'variables' => array(
+        'label' => '',
+        'values' => '',
       ),
     ),
   );

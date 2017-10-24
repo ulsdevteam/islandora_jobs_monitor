@@ -54,13 +54,16 @@ if (!$link) {
  * Step 1. Remove any `host_gearman_job` or `host_server_health` records for
  *         this server that are more than 1 hr old.
  */
-$exec_free = explode("\n", trim(shell_exec('free')));
-$get_mem = preg_split("/[\s]+/", $exec_free[1]);
-$mem = trim(round($get_mem[2]/$get_mem[1], 5));
+$sql = "DELETE FROM `host_server_health` WHERE timestamp < (UNIX_TIMESTAMP() - 3600)";
+mysqli_query($link, $sql);
 
 /**
  * Step 2. Get CPU % and Memory % and update `host_server_health`.
  */
+$exec_free = explode("\n", trim(shell_exec('free')));
+$get_mem = preg_split("/[\s]+/", $exec_free[1]);
+$mem = trim(round($get_mem[2]/$get_mem[1], 5));
+
 $command = 'mpstat | grep all | awk \'{print $12}\'';
 $cpu = trim(shell_exec($command));
 
