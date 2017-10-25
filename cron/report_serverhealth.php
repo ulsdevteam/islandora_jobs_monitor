@@ -142,7 +142,7 @@ function _handle_master_command($link, $master_command, $server_id) {
 //      $command_text = "Kill PHP";
 //      break;
     case "clear_tmp":
-      $command_text = "rm -rf /tmp/tuque*;rm -rf /tmp/pitt*;rm -rf curlcookie*";
+      $command_text = "rm -rf /tmp/tuque*;rm -rf /tmp/pitt*;rm -rf /tmp/curlcookie*";
       break;
     case "stop_gearmand":
       $command_text = "service gearmand stop";
