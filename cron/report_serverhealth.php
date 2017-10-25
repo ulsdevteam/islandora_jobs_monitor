@@ -1,11 +1,13 @@
 #!/usr/bin/php
 <?php
 
-// Step 1. Remove any `host_gearman_job` or `host_server_health` records for
+// Step 1. Check for a "master_command" for the current server, and run that
+//         process and update the record to remove that task.
+// Step 2. Remove any `host_gearman_job` or `host_server_health` records for
 //         this server that are more than 1 hr old.
-// Step 2. Get CPU % and Memory % and update `host_server_health`.
-// Step 3. Update the record in `host_error_log` (if the file is newer than the record).
-// Step 4. Post the results to the server that is reporting (specified by the
+// Step 3. Get CPU % and Memory % and update `host_server_health`.
+// Step 4. Update the record in `host_error_log` (if the file is newer than the record).
+// Step 5. Post the results to the server that is reporting (specified by the
 //         config value for server_monitor.
 
 // Load our own Library.
@@ -51,14 +53,28 @@ if (!$link) {
 }
 
 /**
- * Step 1. Remove any `host_gearman_job` or `host_server_health` records for
+ * Step 1. Check for a "master_command" for the current server, and run that
+ *         process and update the record to remove that task.
+ */
+$sql = "SELECT master_command FROM `servers` WHERE server_id = " . $server_id;
+$result = mysqli_query($link, $sql);
+if ($row = mysqli_fetch_assoc($result)) {
+  $master_command = $row['master_command'];
+  if ($master_command) {
+    _handle_master_command($link, $master_command, $server_id);
+  }
+}
+
+
+/**
+ * Step 2. Remove any `host_gearman_job` or `host_server_health` records for
  *         this server that are more than 1 hr old.
  */
-$sql = "DELETE FROM `host_server_health` WHERE timestamp < (UNIX_TIMESTAMP() - 3600)";
+$sql = "DELETE FROM `host_server_health` WHERE server_id = " . $server_id . " AND timestamp < (UNIX_TIMESTAMP() - 3600)";
 mysqli_query($link, $sql);
 
 /**
- * Step 2. Get CPU % and Memory % and update `host_server_health`.
+ * Step 3. Get CPU % and Memory % and update `host_server_health`.
  */
 $exec_free = explode("\n", trim(shell_exec('free')));
 $get_mem = preg_split("/[\s]+/", $exec_free[1]);
@@ -68,7 +84,7 @@ $command = 'mpstat | grep all | awk \'{print 100-$12}\'';
 $cpu = trim(shell_exec($command));
 
 /**
- * Step 3. Update the record in `host_error_log` (if the file is newer than the record)
+ * Step 4. Update the record in `host_error_log` (if the file is newer than the record)
  *         and save this error_log section to the database.
  */
 $host_error_log = file_get_contents('/tmp/error_log_last100.txt');
@@ -80,7 +96,7 @@ $result = mysqli_query($link, $sql);
 
 
 /**
- * Step 4. Post the results to the server that is reporting (specified by the
+ * Step 5. Post the results to the server that is reporting (specified by the
  *         config value for server_monitor.
  */
 // I think that the "ip_login" module does not pass any posted variables to the 
@@ -105,4 +121,44 @@ else {
 
 exit(0);
 
-?>
+/**
+ * This will handle the possible master commands on the current server.  The
+ * command will be executed and the servers record will be updated to clear the
+ * master_command value for the current server_id.
+ *
+ * @param type $link
+ * @param type $master_command
+ * @param type $server_id
+ */
+function _handle_master_command($link, $master_command, $server_id) {
+  switch ($master_command) {
+    case "stop_gearman_workers":
+      $command_text = "service gearman-workers stop";
+      break;
+    case "start_gearman_workers":
+      $command_text = "service gearman-workers start";
+      break;
+//    case "killall_php":
+//      $command_text = "Kill PHP";
+//      break;
+    case "clear_tmp":
+      $command_text = "rm -rf /tmp/tuque*;rm -rf /tmp/pitt*;rm -rf curlcookie*";
+      break;
+    case "stop_gearmand":
+      $command_text = "service gearmand stop";
+      break;
+    case "start_gearmand":
+      $command_text = "service gearmand start";
+      break;
+    default:
+      $command_text = '';
+      break;
+  }
+
+  if ($command_text) {
+    $null = shell_exec($command_text);
+  }
+
+  $sql = "UPDATE servers SET master_command = '' WHERE server_id = " . $server_id;
+  $result = mysqli_query($link, $sql);
+}

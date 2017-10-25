@@ -2,12 +2,11 @@
     margin: 8px;
 }
 
-.error_log {
+.error_log textarea {
     width: 99%;
     border: 2px solid #aaa;
     font-family: Andale Mono, monospace;
     font-size: 0.825em;
-    border-radius: 8px;
     background-color: #eee;
 }
 
@@ -60,4 +59,12 @@
     float: left;
     min-height: 25px;
     background-color: #777;
+}
+
+.server_controls {
+    font-size: smaller;
+}
+
+.server_controls a {
+    color: #693;
 }

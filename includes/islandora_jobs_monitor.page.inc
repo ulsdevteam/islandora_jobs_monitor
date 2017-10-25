@@ -18,11 +18,23 @@ function islandora_jobs_monitor_page() {
   // Loop through the hosts data and call appropriate theme code to add
   // to themed_hosts array.
   $themed_hosts = array();
+  $err_log_link_options = array(
+    'attributes' => array(
+      'target'=>'_blank',
+      'title' => ''
+    ),
+  );
+
   foreach ($hosts as $host) {
     $metrics = islandora_jobs_monitor_get_health_metrics($host['server_id']);
+    // Convert the errors_in_last_100 value into a link that will serve up
+    // the related last 100 lines from that server's error_log file.
+    $err_log_link_options['attributes']['title'] = 'View "' . $host['name'] . '" error log';
+    $host['errors_in_last_100'] = l($host['errors_in_last_100'], '/islandora/islandora_job_monitor/error_log/' . $host['server_id'], $err_log_link_options);
 
     $worker = $host['is_worker'];
     // Unset these either way, they do not need to be used in the themed output.
+    $server_id = $host['server_id'];
     unset($host['server_id']);
     unset($host['is_worker']);
     $keys = array_keys($metrics['cpu_percentages']);
@@ -31,6 +43,9 @@ function islandora_jobs_monitor_page() {
     if ($worker) {
       $themed_hosts['workers'][] = theme('islandora_jobs_monitor_themed_worker', array(
         'host_record' => $host,
+        'control_links' => theme('islandora_jobs_monitor_themed_control_links', array(
+          'server_control_links' => islandora_jobs_monitor_get_worker_control_links($server_id),
+        )),
         'cpu_values' => theme('islandora_jobs_monitor_themed_0_to_100_metrics', array(
           'label' => 'CPU (' . ($first_key ? $metrics['cpu_percentages'][$first_key] . '%' : '?' ) . ')',
           'values' => $metrics['cpu_percentages'],
@@ -44,8 +59,17 @@ function islandora_jobs_monitor_page() {
     else {
       $themed_hosts['master'][] = theme('islandora_jobs_monitor_themed_master', array(
         'host_record' => $host,
-        'cpu_values' => $metrics['cpu_percentages'],
-        'memory_values' => $metrics['memory_percentages']));
+        'control_links' => ($server_id < 100) ? theme('islandora_jobs_monitor_themed_control_links', array(
+          'server_control_links' => islandora_jobs_monitor_get_master_control_links($server_id),
+        )) : '',
+        'cpu_values' => theme('islandora_jobs_monitor_themed_0_to_100_metrics', array(
+          'label' => 'CPU (' . ($first_key ? $metrics['cpu_percentages'][$first_key] . '%' : '?' ) . ')',
+          'values' => $metrics['cpu_percentages'],
+        )),
+        'memory_values' => theme('islandora_jobs_monitor_themed_0_to_100_metrics', array(
+          'label' => 'Memory (' . ($first_key ? $metrics['memory_percentages'][$first_key] . '%' : '?' ) . ')',
+          'values' => $metrics['memory_percentages'],
+        ))));
     }
   }
 
@@ -72,12 +96,46 @@ function islandora_jobs_monitor_get_jobs_report() {
   return $stats_table;
 }
 
-function islandora_jobs_monitor_get_error_log() {
-  $output = array();
-  $command = 'cat /tmp/error_log_last100.txt';
-  exec($command, $output, $ret);
+/**
+ * Gets the worker links relative to the server_id provided.
+ *
+ * @param type $server_id
+ * @return array
+ *   Links that will update the master_command value for the server's record.
+ */
+function islandora_jobs_monitor_get_worker_control_links($server_id) {
+  $links = array();
+  $current_master_command = islandora_jobs_monitor_get_master_command($server_id);
 
-  $output = htmlspecialchars(implode("\n", $output));
+  if ($current_master_command) {
+    module_load_include('inc', 'islandora_jobs_monitor', 'includes/utilities');
+    $command_text = islandora_jobs_monitor_command_text_of_master_command($current_master_command);
+    $links[] = '<em>Currently processing "' . $command_text . '" command.</em>';
+  }
+  else {
+    $links[] = l('Stop Gearman Workers', '/islandora/islandora_job_monitor/command_handler/' . $server_id . '/stop_gearman_workers');
+    $links[] = l('Start Gearman Workers', '/islandora/islandora_job_monitor/command_handler/' . $server_id . '/start_gearman_workers');
+    // $links[] = l('Kill PHP', '/islandora/islandora_job_monitor/command_handler/' . $server_id . '/killall_php');
+    $links[] = l('Clear /tmp folder', '/islandora/islandora_job_monitor/command_handler/' . $server_id . '/clear_tmp');
+  }
 
-  return $output;
+  return $links;
+}
+
+function islandora_jobs_monitor_get_master_control_links($server_id) {
+  $links = array();
+  $current_master_command = islandora_jobs_monitor_get_master_command($server_id);
+
+  if ($current_master_command) {
+    module_load_include('inc', 'islandora_jobs_monitor', 'includes/utilities');
+    $command_text = islandora_jobs_monitor_command_text_of_master_command($current_master_command);
+    $links[] = '<em>Currently processing "' . $command_text . '" command.</em>';
+  } 
+  else {
+    $links[] = l('Stop Gearmand', '/islandora/islandora_job_monitor/command_handler/' . $server_id . '/stop_gearmand');
+    $links[] = l('Start Gearmand', '/islandora/islandora_job_monitor/command_handler/' . $server_id . '/start_gearmand');
+    $links[] = l('Clear /tmp folder', '/islandora/islandora_job_monitor/command_handler/' . $server_id . '/clear_tmp');
+  }
+
+  return $links;
 }

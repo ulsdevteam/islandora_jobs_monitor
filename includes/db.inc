@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Utilities functions for Islandora Daily Stats module.
+ */
+
+/**
  * This will use the mysqli_real_escape_string function.
  * 
  * @param type $link
@@ -13,10 +18,12 @@ function islandora_jobs_monitor_safe_qstring($link, $in) {
 }
 
 /**
- * @file
- * Utilities functions for Islandora Daily Stats module.
+ * Get general info for all servers.
+ *
+ * @return array
+ *   rows of data pertaining to all hosts
  */
-function islandora_jobs_monitor_get_all_hosts($all_fields = false) {
+function islandora_jobs_monitor_get_all_hosts() {
   $hosts = array();
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
 
@@ -36,6 +43,14 @@ function islandora_jobs_monitor_get_all_hosts($all_fields = false) {
   return $hosts;
 }
 
+/**
+ * This will get the health metrics for a given server.
+ *
+ * @param integer $server_id
+ * @return array
+ *   The values for the specific host's health from the host_server_health
+ * table.
+ */
 function islandora_jobs_monitor_get_health_metrics($server_id) {
   $rows = array(
     'cpu_percentages' => array(),
@@ -152,4 +167,72 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }
+}
+
+/**
+ * Gets the error_log_last_100_lines value related to the provided server_id.
+ *
+ * @param type $server_id
+ * @return string
+ */
+function islandora_jobs_monitor_get_error_log($server_id) {
+  $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
+  $sql = "SELECT e.error_log_last_100_lines `error_log`, s.name `host_name` " .
+         "FROM servers s LEFT OUTER JOIN host_error_log e ON (e.server_id = s.server_id) " .
+         "WHERE s.server_id = " . islandora_jobs_monitor_safe_qstring($link, $server_id);
+  $result = mysqli_query($link, $sql);
+  if (!$result) {
+    islandora_jobs_monitor_sql_error_die($link, $sql);
+  }
+  if ($row = mysqli_fetch_assoc($result)) {
+    $error_log_record = $row;
+  }
+  else {
+    $error_log_record = array(
+      'error_log' => '',
+      'host_name' => 'unknown',
+    );
+  }
+
+  mysqli_close($link);
+  return $error_log_record;
+}
+
+/**
+ * Gets the current master_command record value.
+ *
+ * @param type $server_id
+ * @return type
+ */
+function islandora_jobs_monitor_get_master_command($server_id) {
+  $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
+  $sql = "SELECT master_command FROM servers " .
+         "WHERE server_id = " . islandora_jobs_monitor_safe_qstring($link, $server_id);
+  $result = mysqli_query($link, $sql);
+  if (!$result) {
+    islandora_jobs_monitor_sql_error_die($link, $sql);
+  }
+
+  mysqli_close($link);
+  return ($row = mysqli_fetch_assoc($result)) ?
+    $row['master_command'] :
+    '';
+}
+
+/**
+ * Puts the current master_command record value for the provided server.
+ * 
+ * @param integer $server_id
+ * @param string $command
+ */
+function islandora_jobs_monitor_put_master_command($server_id, $command) {
+  $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
+  $sql = "UPDATE servers SET master_command = '" . islandora_jobs_monitor_safe_qstring($link, $command) . "' " .
+         "WHERE server_id = " . islandora_jobs_monitor_safe_qstring($link, $server_id);
+  $result = mysqli_query($link, $sql);
+  if (!$result) {
+    islandora_jobs_monitor_sql_error_die($link, $sql);
+  }
+
+  mysqli_close($link);
 }

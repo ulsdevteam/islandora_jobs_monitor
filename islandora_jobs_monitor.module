@@ -51,6 +51,13 @@ function islandora_jobs_monitor_menu() {
       'file' => 'includes/islandora_jobs_monitor.page.inc',
       'access arguments' => array(ISLANDORA_USE_STACK_MONITOR),
     ),
+    'islandora/islandora_job_monitor/error_log/%' => array(
+      'title' => 'Islandora Jobs Monitor View Error Log',
+      'page callback' => array('islandora_jobs_monitor_error_log_page'),
+      'page arguments' => array(3),
+      'file' => 'includes/error_log.page.inc',
+      'access arguments' => array(ISLANDORA_USE_STACK_MONITOR),
+    ),
     'islandora/islandora_job_monitor/api/serverhealth' => array(
       'title' => 'Islandora Jobs Monitor API endpoint for server health',
       'file' => 'includes/api.inc',
@@ -58,9 +65,15 @@ function islandora_jobs_monitor_menu() {
       'type' => MENU_CALLBACK,
       'access callback' => 'islandora_jobs_monitor_access_api_callback',
       'access arguments' => array(ISLANDORA_JOBS_MONITOR_ACCESS_API),
-    )
-  );
-  
+    ),
+    'islandora/islandora_job_monitor/command_handler/%/%' => array(
+      'title' => 'Islandora Jobs Monitor - pending development',
+      'page callback' => array('islandora_jobs_monitor_control_link_handler'),
+      'page arguments' => array(3,4),
+      'file' => 'includes/islandora_jobs_monitor_control_link_handler.page.inc',
+      'access arguments' => array(ISLANDORA_USE_STACK_MONITOR),
+    ),
+  );  
   return $menu;
 }
 
@@ -73,7 +86,8 @@ function islandora_jobs_monitor_menu() {
 function islandora_jobs_monitor_preprocess_page(&$vars) {
   $item = menu_get_item();
   if (is_array($item)) {
-    if ($item['path'] == 'islandora/islandora_job_monitor') {
+    if ($item['path'] == 'islandora/islandora_job_monitor' ||
+        $item['path'] == 'islandora/islandora_job_monitor/error_log/%') {
       $module_path = drupal_get_path('module', 'islandora_jobs_monitor');
       drupal_add_css($module_path . '/css/islandora_jobs_monitor.css');
       drupal_add_js($module_path . '/js/islandora_jobs_monitor.js');
@@ -98,6 +112,7 @@ function islandora_jobs_monitor_theme() {
       'template' => 'theme/islandora-jobs-monitor-themed-worker',
       'variables' => array(
         'host_record' => '',
+        'control_links' => '',
         'cpu_values' => '',
         'memory_values' => ''
       ),
@@ -115,6 +130,19 @@ function islandora_jobs_monitor_theme() {
       'variables' => array(
         'label' => '',
         'values' => '',
+      ),
+    ),
+    'islandora_jobs_monitor_error_log' => array(
+      'template' => 'theme/islandora-jobs-monitor-error-log',
+      'variables' => array(
+        'host_name' => '',
+        'error_log' => '',
+      ),
+    ),
+    'islandora_jobs_monitor_themed_control_links' => array(
+      'template' => 'theme/islandora-jobs-monitor-control-links',
+      'variables' => array(
+        'server_control_links' => '',
       ),
     ),
   );
