@@ -86,6 +86,22 @@ function islandora_jobs_monitor_menu() {
 function islandora_jobs_monitor_preprocess_page(&$vars) {
   $item = menu_get_item();
   if (is_array($item)) {
+    // For the main monitor page, add a refresh meta tag.
+    if ($item['path'] == 'islandora/islandora_job_monitor') {
+      $meta_refresh = array(
+        '#type' => 'html_tag',
+        '#tag' => 'meta',
+        '#attributes' => array(
+           'http-equiv' => 'refresh',
+           'content' => '600',
+           // This is not needed if the same page:
+           //  'content' => '600, url=/islandora/islandora_job_monitor',
+        ),
+      );
+      drupal_add_html_head($meta_refresh, 'meta_refresh');
+    }
+
+    // Add css and js for pages handled by this module that need them.
     if ($item['path'] == 'islandora/islandora_job_monitor' ||
         $item['path'] == 'islandora/islandora_job_monitor/error_log/%') {
       $module_path = drupal_get_path('module', 'islandora_jobs_monitor');
