@@ -70,7 +70,7 @@ if ($row = mysqli_fetch_assoc($result)) {
  * Step 2. Remove any `host_gearman_job` or `host_server_health` records for
  *         this server that are more than 1 hr old.
  */
-$sql = "DELETE FROM `host_server_health` WHERE server_id = " . $server_id . " AND timestamp < (UNIX_TIMESTAMP() - 3600)";
+$sql = "DELETE FROM `host_server_health` WHERE server_id = " . $server_id . " AND timestamp < DATE_SUB(NOW(), INTERVAL 1 HOUR)";
 mysqli_query($link, $sql);
 
 /**
