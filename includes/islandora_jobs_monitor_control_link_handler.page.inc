@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Main page handler function for Islandora Daily Stats module.
+ * Main page handler function for Islandora Jobs Stack Monitor module.
  */
 
 /**

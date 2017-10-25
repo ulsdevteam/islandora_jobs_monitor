@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Main page handler function for Islandora Daily Stats module.
+ * Main page handler function for Islandora Jobs Stack Monitor module.
  */
 
 /**
- * This will control the variables that will make up any stats report.
+ * Controller for the Islandora Jobs Stack Monitor main page.
  *
  * @return string
  *   Page markup html.
@@ -85,15 +85,15 @@ function islandora_jobs_monitor_page() {
  * Create the report based on the available hosts.
  *
  * @return array
- *   'stats_table': Drupal themed table for stats report in HTML markup.
+ *   'jobs_table': Drupal themed table of gearman jobs in HTML markup.
  */
 function islandora_jobs_monitor_get_jobs_report() {
   $headers = array('Worker', 'PID', 'Worker Function Name', 'Job Started');
   $rows = islandora_jobs_monitor_get_jobs_rows();
-  $stats_table = '<h3>Jobs Records</h3>' .
+  $jobs_table = '<h3>Jobs Records</h3>' .
           theme('table', array('header' => $headers, 'rows' => $rows));
 
-  return $stats_table;
+  return $jobs_table;
 }
 
 /**

@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Main page handler function for Islandora Daily Stats module.
+ * Main page handler function for Islandora Jobs Stack Monitor module.
  */
 
 /**
- * This will control the variables that will make up any stats report.
+ * Controller for the error_log display page.
  *
  * @return string
  *   Page markup html.

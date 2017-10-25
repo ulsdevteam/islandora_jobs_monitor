@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Utilities functions for Islandora Daily Stats module.
+ * Utilities functions for Islandora Jobs Stack Monitor module.
  */
 
 /**
