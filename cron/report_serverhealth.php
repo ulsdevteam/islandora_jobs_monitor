@@ -103,14 +103,20 @@ $result = mysqli_query($link, $sql);
 // redirected-to page and loses them when the /user login page is processed.  The
 // easy way around this is to post the values as $_GET 
 if ($server_id > 0) {
-  $command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&errors=" . $host_error_log_errors_count . "' >/dev/null 2>&1";
+  $command = 'df -P | grep "lv_root" | gawk \'{ print $5 }\'';
+  $ingest_tmp_disk_space_pct = str_replace("%", "", trim(shell_exec($command)));
+
+  $command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&errors=" . $host_error_log_errors_count . "&disk_space=" . $ingest_tmp_disk_space_pct . "' >/dev/null 2>&1";
   $output = array();
   exec($command, $output, $return);
 }
 else {
+  $command = 'df -P | grep "/ingest/tmp" | gawk \'{ print $5 }\'';
+  $ingest_tmp_disk_space_pct = str_replace("%", "", trim(shell_exec($command)));
+
   // this is gamera -- must save the record with SQL.
-  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`) VALUES (" .
-        $server_id . ", now(), " . $cpu . ", " . $mem . ", " . $host_error_log_errors_count . ")";
+  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_space`) VALUES (" .
+         $server_id . ", now(), " . $cpu . ", " . $mem . ", " . $host_error_log_errors_count . ", '" . $ingest_tmp_disk_space_pct . "')";
   $result = mysqli_query($link, $sql);
   if (!$result) {
     die('Invalid query: ' . mysqli_error($link) );

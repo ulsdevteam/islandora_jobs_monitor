@@ -161,9 +161,10 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
     $cpu_percentage = isset($save_values['cpu']) ? $save_values['cpu'] : 0;
     $memory_percentage = isset($save_values['memory']) ? $save_values['memory'] : 0;
     $error_log_errors_in_last_100 = isset($save_values['errors']) ? $save_values['errors'] : 0;
+    $disk_space = isset($save_values['disk_space']) ? $save_values['disk_space'] : 0;
 
-    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`) VALUES (" .
-        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ")";
+    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_space`) VALUES (" .
+        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '", $disk_space, "')";
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }
