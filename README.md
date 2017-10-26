@@ -30,6 +30,7 @@ Other servers could be configured to be included in this as well (with the conne
 The new `islandora_jobs_monitor` database is needed to store the info and server health statistics for the various servers that make up the components of the stack.
 #### `servers`
 This stores the general info for each server.  The ip_address values below have been obfuscated.
+
 server_id | hostname | ip_address | is_worker | name | master_command 
 --- | --- | --- | ---:| --- | --- 
 0|pa-staff-01|???.???.171.66|0|Gamera
