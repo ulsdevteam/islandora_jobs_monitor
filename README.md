@@ -30,14 +30,14 @@ Other servers could be configured to be included in this as well (with the conne
 The new `islandora_jobs_monitor` database is needed to store the info and server health statistics for the various servers that make up the components of the stack.
 #### `servers`
 This stores the general info for each server.  The ip_address values below have been obfuscated.
-|server_id|hostname|ip_address|is_worker|name|master_command|
-| --- | --- | --- | ---:| --- | --- |
-|0|pa-staff-01|???.???.171.66|0|Gamera|
-|1|pa-gmworker-01|???.???.171.75|1|gmworker-01|
-|2|pa-gmworker-02|???.???.171.78|1|gmworker-02|clear_tmp|
-|3|pa-gmworker-03|???.???.171.79|1|gmworker-03|
-|4|pa-gmworker-04|???.???.171.80|1|gmworker-04|
-|100|pa-fed-staff-01|???.???.230.34|0|Fedora|
+server_id | hostname | ip_address | is_worker | name | master_command 
+--- | --- | --- | ---:| --- | --- 
+0|pa-staff-01|???.???.171.66|0|Gamera
+1|pa-gmworker-01|???.???.171.75|1|gmworker-01
+2|pa-gmworker-02|???.???.171.78|1|gmworker-02|clear_tmp
+3|pa-gmworker-03|???.???.171.79|1|gmworker-03
+4|pa-gmworker-04|???.???.171.80|1|gmworker-04
+100|pa-fed-staff-01|???.???.230.34|0|Fedora
 
 #### `host_server_health`
 This table stores the health records for each server.  The CRON process will either populate this, or sent a http PUT to the [islandora_jobs_monitor] "server_monitor" value (see section on uls-tuque.ini above) server which will save the values.
