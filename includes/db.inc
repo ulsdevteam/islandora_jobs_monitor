@@ -28,6 +28,7 @@ function islandora_jobs_monitor_get_all_hosts() {
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
 
   $sql = "SELECT s.server_id, s.name, s.is_worker, s.hostname, s.ip_address, " .
+         " (SELECT h.disk_space FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `disk_space` " .
          " (SELECT h.error_log_errors_in_last_100 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `errors_in_last_100` " .
          "FROM servers s " .
          "LEFT OUTER JOIN host_error_log e ON (e.server_id = s.server_id)";
@@ -164,7 +165,7 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
     $disk_space = isset($save_values['disk_space']) ? $save_values['disk_space'] : 0;
 
     $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_space`) VALUES (" .
-        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '", $disk_space, "')";
+        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '" . $disk_space . "')";
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }
