@@ -1,5 +1,13 @@
 #!/bin/bash
+
+# copy this file to the /opt/islandora_cron/ folder and make it executable by
+#
+#   $ sudo chmod +x cpu_check.sh
+#
+
 # by Paul Colby (http://colby.id.au), no rights reserved ;)
+#
+# Enhanced by Brian Gillingham to output only one value.
 
 PREV_TOTAL=0
 PREV_IDLE=0

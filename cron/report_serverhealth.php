@@ -10,31 +10,6 @@
 // Step 5. Post the results to the server that is reporting (specified by the
 //         config value for server_monitor.
 
-// Load our own Library.
-require_once('/opt/islandora_cron/uls-tuque-lib.php');
-
-/* IF ANY TUQUE COMMANDS ARE NEEDED, UNCOMENT THIS BLOCK --
- *
-// Setup Tuque
-$path_to_tuque = get_config_value('tuque','path_to_tuque');
-
-if (file_exists($path_to_tuque)) {
-        require_once($path_to_tuque . 'Cache.php');
-        require_once($path_to_tuque . 'FedoraApi.php');
-        require_once($path_to_tuque . 'FedoraApiSerializer.php');
-        require_once($path_to_tuque . 'Object.php');
-        require_once($path_to_tuque . 'Repository.php');
-        require_once($path_to_tuque . 'RepositoryConnection.php');
-} else {
-        print "Error - \"" . $path_to_tuque . "\" Invalid path to Tuque.\n";
-        exit(1);
-}
-
-$connection = getRepositoryConnection();
-$repository = getRepository($connection);
-
- -- IF ANY TUQUE COMMANDS ARE NEEDED, UNCOMENT THIS BLOCK */
-
 
 /**
  * Connect to mysql
@@ -46,7 +21,7 @@ $server_monitor = get_config_value('islandora_jobs_monitor', 'server_monitor');
 $db_host = get_config_value('mysql','host');
 $db_user = get_config_value('mysql','username');
 $db_pass = get_config_value('mysql','password');
-$db_name = get_config_value('islandora_jobs_monitor', 'jobs_database');
+$db_name = get_config_value('mysql', 'jobs_monitor_database');
 $link = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
 if (!$link) {
     die('Not connected : ' . mysql_error());
@@ -167,4 +142,26 @@ function _handle_master_command($link, $master_command, $server_id) {
 
   $sql = "UPDATE servers SET master_command = '' WHERE server_id = " . $server_id;
   $result = mysqli_query($link, $sql);
+}
+
+/**
+ * Will get the value from the config file.
+ * 
+ * @param type $section
+ * @param type $key
+ * @return string
+ *   The value from the config for the given section and key.
+ */
+function get_config_value($section,$key) {
+  if (file_exists('/opt/islandora_cron/islandora_jobs_monitor.ini')) {
+    $ini_array = parse_ini_file('/opt/islandora_cron/islandora_jobs_monitor.ini', true);
+    if (isset($ini_array[$section][$key])) {
+      $value = $ini_array[$section][$key];
+      return($value);
+    } else {
+      return("");
+    }
+  } else {
+    return(0);
+  }
 }
