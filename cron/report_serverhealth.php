@@ -76,9 +76,8 @@ mysqli_query($link, $sql);
 /**
  * Step 3. Get CPU % and Memory % and update `host_server_health`.
  */
-$exec_free = explode("\n", trim(shell_exec('free')));
-$get_mem = preg_split("/[\s]+/", $exec_free[1]);
-$mem = trim(round($get_mem[2]/$get_mem[1], 3));
+$command = 'vmstat -s | awk  \' $0 ~ /total memory/ {total=$1 } $0 ~/free memory/ {free=$1} $0 ~/buffer memory/ {buffer=$1} $0 ~/cache/ {cache=$1} END{print (total-free-buffer-cache)/total*100}\'';
+$mem = trim(shell_exec($command));
 
 $command = '/opt/islandora_cron/cpu_check.sh';
 // $command = 'mpstat | grep all | awk \'{print 100-$12}\'';
