@@ -116,7 +116,7 @@ else {
   $ingest_tmp_disk_used_pct = str_replace("%", "", trim(shell_exec($command)));
 
   // this is gamera -- must save the record with SQL.
-  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_space`) VALUES (" .
+  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_pct`) VALUES (" .
         $server_id . ", now(), " . $cpu . ", " . $mem . ", " . $host_error_log_errors_count . ", '" . $ingest_tmp_disk_used_pct . "')";
   $result = mysqli_query($link, $sql);
   if (!$result) {
