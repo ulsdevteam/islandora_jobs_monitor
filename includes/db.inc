@@ -28,7 +28,7 @@ function islandora_jobs_monitor_get_all_hosts() {
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
 
   $sql = "SELECT s.server_id, s.name, s.is_worker, s.hostname, s.ip_address, " .
-         " (SELECT h.disk_space FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `disk_space`, " .
+         " (SELECT h.disk_used_pct FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `disk_used_pct`, " .
          " (SELECT h.error_log_errors_in_last_100 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `errors_in_last_100` " .
          "FROM servers s " .
          "LEFT OUTER JOIN host_error_log e ON (e.server_id = s.server_id)";
@@ -163,10 +163,10 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
     $cpu_percentage = isset($save_values['cpu']) ? $save_values['cpu'] : 0;
     $memory_percentage = isset($save_values['memory']) ? $save_values['memory'] : 0;
     $error_log_errors_in_last_100 = isset($save_values['errors']) ? $save_values['errors'] : 0;
-    $disk_space = isset($save_values['disk_space']) ? $save_values['disk_space'] : 0;
+    $disk_used_pct = isset($save_values['disk_used_pct']) ? $save_values['disk_used_pct'] : 0;
 
-    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_space`) VALUES (" .
-        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '" . $disk_space . "')";
+    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_pct`) VALUES (" .
+        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '" . $disk_used_pct . "')";
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }

@@ -253,3 +253,4 @@ function islandora_jobs_monitor_access_api_callback() {
   global $user;
   return (user_access(ISLANDORA_JOBS_MONITOR_ACCESS_API, $user));
 }
+

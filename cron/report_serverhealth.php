@@ -3,8 +3,8 @@
 
 // Step 1. Check for a "master_command" for the current server, and run that
 //         process and update the record to remove that task.
-// Step 2. MOVED TO THE API handler - Remove any `host_gearman_job` or 
-           `host_server_health` records for this server that are more than 1 hr old.
+// Step 2. Remove any `host_gearman_job` or `host_server_health` records for
+//         this server that are more than 1 hr old.
 // Step 3. Get CPU % and Memory % and update `host_server_health`.
 // Step 4. Update the record in `host_error_log` (if the file is newer than the record).
 // Step 5. Post the results to the server that is reporting (specified by the
@@ -65,20 +65,24 @@ if ($row = mysqli_fetch_assoc($result)) {
   }
 }
 
-/**
- * Step 2. This has been moved to the api handler.
- */
 
+/**
+ * Step 2. Remove any `host_gearman_job` or `host_server_health` records for
+ *         this server that are more than 1 hr old.
+ */
+$sql = "DELETE FROM `host_server_health` WHERE server_id = " . $server_id . " AND timestamp < (UNIX_TIMESTAMP() - 3600)";
+mysqli_query($link, $sql);
 
 /**
  * Step 3. Get CPU % and Memory % and update `host_server_health`.
  */
-$command = 'vmstat -s | awk  \' $0 ~ /total memory/ {total=$1 } $0 ~/free memory/ {free=$1} $0 ~/buffer memory/ {buffer=$1} $0 ~/cache/ {cache=$1} END{print (total-free-buffer-cache)/total*100}\'';
-$mem = trim(shell_exec($command));
+$exec_free = explode("\n", trim(shell_exec('free')));
+$get_mem = preg_split("/[\s]+/", $exec_free[1]);
+$mem = trim(round($get_mem[2]/$get_mem[1], 3));
 
-$command = '/opt/islandora_cron/cpu_check.sh';
+$command = 'cpu_check.sh';
 // $command = 'mpstat | grep all | awk \'{print 100-$12}\'';
-$cpu = trim(shell_exec($command))/100;
+$cpu = trim(shell_exec($command) / 100);
 
 /**
  * Step 4. Update the record in `host_error_log` (if the file is newer than the record)
@@ -100,20 +104,14 @@ $result = mysqli_query($link, $sql);
 // redirected-to page and loses them when the /user login page is processed.  The
 // easy way around this is to post the values as $_GET 
 if ($server_id > 0) {
-  $command = 'df -P | grep "lv_root" | gawk \'{ print $5 }\'';
-  $ingest_tmp_disk_space_pct = str_replace("%", "", trim(shell_exec($command)));
-
-  $command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&errors=" . $host_error_log_errors_count . "&disk_space=" . $ingest_tmp_disk_space_pct . "' >/dev/null 2>&1";
+  $command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&errors=" . $host_error_log_errors_count . "' >/dev/null 2>&1";
   $output = array();
   exec($command, $output, $return);
 }
 else {
-  $command = 'df -P | grep "/ingest/tmp" | gawk \'{ print $5 }\'';
-  $ingest_tmp_disk_space_pct = str_replace("%", "", trim(shell_exec($command)));
-
   // this is gamera -- must save the record with SQL.
-  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_space`) VALUES (" .
-         $server_id . ", now(), " . $cpu . ", " . $mem . ", " . $host_error_log_errors_count . ", '" . $ingest_tmp_disk_space_pct . "')";
+  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`) VALUES (" .
+        $server_id . ", now(), " . $cpu . ", " . $mem . ", " . $host_error_log_errors_count . ")";
   $result = mysqli_query($link, $sql);
   if (!$result) {
     die('Invalid query: ' . mysqli_error($link) );
@@ -145,7 +143,7 @@ function _handle_master_command($link, $master_command, $server_id) {
 //      $command_text = "Kill PHP";
 //      break;
     case "clear_tmp":
-      $command_text = "rm -rf /tmp/tuque*;rm -rf /tmp/pitt*;rm -rf /tmp/curlcookie*";
+      $command_text = "rm -rf /tmp/tuque*;rm -rf /tmp/pitt*;rm -rf curlcookie*";
       break;
     case "stop_gearmand":
       $command_text = "service gearmand stop";
