@@ -158,6 +158,7 @@ function islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname) {
 function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_values) {
   $server_id = islandora_jobs_monitor_get_server_id_of_ip($ip_address);
   if ($server_id) {
+    islandora_jobs_monitor_delete_old_records($server_id);
     $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
     $cpu_percentage = isset($save_values['cpu']) ? $save_values['cpu'] : 0;
     $memory_percentage = isset($save_values['memory']) ? $save_values['memory'] : 0;
@@ -169,6 +170,18 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }
+}
+
+/**
+ * This will remove any old `host_gearman_job` or `host_server_health`.
+ *
+ * @param string $server_id
+ */
+function islandora_jobs_monitor_delete_old_records($server_id) {
+  $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
+  $sql = "DELETE FROM `host_server_health` WHERE server_id = " . $server_id . " AND timestamp < DATE_SUB(NOW(), INTERVAL 105 MINUTE)";
+  mysqli_query($link, $sql);
+  mysqli_close($link);
 }
 
 /**

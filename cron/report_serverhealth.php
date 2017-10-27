@@ -3,8 +3,8 @@
 
 // Step 1. Check for a "master_command" for the current server, and run that
 //         process and update the record to remove that task.
-// Step 2. Remove any `host_gearman_job` or `host_server_health` records for
-//         this server that are more than 1 hr old.
+// Step 2. MOVED TO THE API handler - Remove any `host_gearman_job` or 
+           `host_server_health` records for this server that are more than 1 hr old.
 // Step 3. Get CPU % and Memory % and update `host_server_health`.
 // Step 4. Update the record in `host_error_log` (if the file is newer than the record).
 // Step 5. Post the results to the server that is reporting (specified by the
@@ -65,13 +65,10 @@ if ($row = mysqli_fetch_assoc($result)) {
   }
 }
 
-
 /**
- * Step 2. Remove any `host_gearman_job` or `host_server_health` records for
- *         this server that are more than 1 hr old.
+ * Step 2. This has been moved to the api handler.
  */
-$sql = "DELETE FROM `host_server_health` WHERE server_id = " . $server_id . " AND timestamp < DATE_SUB(NOW(), INTERVAL 105 MINUTE)";
-mysqli_query($link, $sql);
+
 
 /**
  * Step 3. Get CPU % and Memory % and update `host_server_health`.
