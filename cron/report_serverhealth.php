@@ -88,7 +88,7 @@ if ($server_id > 0) {
   exec($command, $output, $return);
 }
 else {
-  $command = 'df -P | grep "/ingest/tmp" | gawk \'{ print $5 }\'';
+  $command = 'df -P | grep "/ingest/tmp" | gawk \'{ print $4,$5 }\'';
   $ingest_tmp_disk_fields = str_replace("%", "", trim(shell_exec($command)));
   @list($blocks, $ingest_tmp_disk_used_pct) = explode(" ", $ingest_tmp_disk_fields);
   $bytes_avail = 1024 * $blocks;
