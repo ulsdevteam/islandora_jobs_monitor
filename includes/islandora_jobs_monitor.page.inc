@@ -41,7 +41,8 @@ function islandora_jobs_monitor_page() {
     $first_key = array_pop($keys);
     // Add the percent sign to the end of the disk_used_pct value.
     if (isset($host['disk_used_pct'])) {
-      $host['disk_used_pct'] = $host['disk_used_pct'] . '%';
+      $host['disk_used_pct'] = $host['disk_used_pct'] . '% (' . number_format($host['disk_bytes_avail']) . ' bytes free)';
+      unset($host['disk_bytes_avail']);
     }
     if ($worker) {
       $themed_hosts['workers'][] = theme('islandora_jobs_monitor_themed_worker', array(
