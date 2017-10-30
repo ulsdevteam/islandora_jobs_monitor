@@ -18,10 +18,10 @@ $mem = trim(shell_exec($command));
 $command = '/opt/islandora_cron/cpu_check.sh';
 $cpu = trim(shell_exec($command))/100;
 
-$command = 'df -P | grep "/filestore" | gawk \'{ print $4, $5 }\'';
+$command = 'df -P | grep "/filestore" | gawk \'{ print $3,$4,$5 }\'';
 $disk_fields = str_replace("%", "", trim(shell_exec($command)));
-@list($blocks, $disk_used_pct) = explode(" ", $disk_fields);
-$bytes_avail = 1024 * $blocks;
+@list($used_blocks, $avail_blocks, $disk_used_pct) = explode(" ", $disk_fields);
+$bytes_avail = 1024 * ($avail_blocks - $used_blocks);
 
 /**
  * Step 2. Post the results to the server that is reporting (specified by the
