@@ -21,7 +21,8 @@ $cpu = trim(shell_exec($command))/100;
 $command = 'df -P | grep "/filestore" | gawk \'{ print $4,$5 }\'';
 $disk_fields = str_replace("%", "", trim(shell_exec($command)));
 @list($avail_blocks, $disk_used_pct) = explode(" ", $disk_fields);
-$bytes_avail = 1024 * $avail_blocks;
+// Trick PHP into doing this with floating point math by adding 0.0 to it.
+$bytes_avail = 1024 * ($avail_blocks + 0.0);
 
 /**
  * Step 2. Post the results to the server that is reporting (specified by the
