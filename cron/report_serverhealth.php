@@ -78,20 +78,20 @@ $result = mysqli_query($link, $sql);
 // redirected-to page and loses them when the /user login page is processed.  The
 // easy way around this is to post the values as $_GET 
 if ($server_id > 0) {
-  $command = 'df -P | grep "lv_root" | gawk \'{ print $3,$4,$5 }\'';
+  $command = 'df -P | grep "lv_root" | gawk \'{ print $4,$5 }\'';
   $disk_fields = str_replace("%", "", trim(shell_exec($command)));
-  @list($used_blocks, $avail_blocks, $disk_used_pct) = explode(" ", $disk_fields);
-  $bytes_avail = 1024 * ($avail_blocks - $used_blocks);
+  @list($avail_blocks, $disk_used_pct) = explode(" ", $disk_fields);
+  $bytes_avail = 1024 * $avail_blocks;
 
   $command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&errors=" . $host_error_log_errors_count . "&disk_used_pct=" . $disk_used_pct . "&disk_bytes_avail=" . $bytes_avail . "' >/dev/null 2>&1";
   $output = array();
   exec($command, $output, $return);
 }
 else {
-  $command = 'df -P | grep "/ingest/tmp" | gawk \'{ print $3,$4,$5 }\'';
+  $command = 'df -P | grep "/ingest/tmp" | gawk \'{ print $4,$5 }\'';
   $ingest_tmp_disk_fields = str_replace("%", "", trim(shell_exec($command)));
-  @list($used_blocks, $avail_blocks, $ingest_tmp_disk_used_pct) = explode(" ", $ingest_tmp_disk_fields);
-  $bytes_avail = 1024 * ($avail_blocks - $used_blocks);
+  @list($avail_blocks, $ingest_tmp_disk_used_pct) = explode(" ", $ingest_tmp_disk_fields);
+  $bytes_avail = 1024 * $avail_blocks;
 
   // this is gamera -- must save the record with SQL.
   $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_pct`, `disk_bytes_avail`) VALUES (" .
