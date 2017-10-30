@@ -21,7 +21,7 @@ $server_monitor = get_config_value('islandora_jobs_monitor', 'server_monitor');
 $db_host = get_config_value('mysql','host');
 $db_user = get_config_value('mysql','username');
 $db_pass = get_config_value('mysql','password');
-$db_name = get_config_value('mysql', 'jobs_monitor_database');
+$db_name = get_config_value('mysql', 'jobs_database');
 $link = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
 if (!$link) {
     die('Not connected : ' . mysql_error());
