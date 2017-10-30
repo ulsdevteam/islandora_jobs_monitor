@@ -78,20 +78,24 @@ $result = mysqli_query($link, $sql);
 // redirected-to page and loses them when the /user login page is processed.  The
 // easy way around this is to post the values as $_GET 
 if ($server_id > 0) {
-  $command = 'df -P | grep "lv_root" | gawk \'{ print $5 }\'';
-  $ingest_tmp_disk_used_pct = str_replace("%", "", trim(shell_exec($command)));
+  $command = 'df -P | grep "lv_root" | gawk \'{ print $4,$5 }\'';
+  $disk_fields = str_replace("%", "", trim(shell_exec($command)));
+  @list($blocks, $disk_used_pct) = explode(" ", $disk_fields);
+  $bytes_avail = 1024 * $blocks;
 
-  $command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&errors=" . $host_error_log_errors_count . "&disk_used_pct=" . $ingest_tmp_disk_used_pct . "' >/dev/null 2>&1";
+  $command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&errors=" . $host_error_log_errors_count . "&disk_used_pct=" . $disk_used_pct . "&disk_bytes_avail=" . $bytes_avail . "' >/dev/null 2>&1";
   $output = array();
   exec($command, $output, $return);
 }
 else {
   $command = 'df -P | grep "/ingest/tmp" | gawk \'{ print $5 }\'';
-  $ingest_tmp_disk_used_pct = str_replace("%", "", trim(shell_exec($command)));
+  $ingest_tmp_disk_fields = str_replace("%", "", trim(shell_exec($command)));
+  @list($blocks, $ingest_tmp_disk_used_pct) = explode(" ", $ingest_tmp_disk_fields);
+  $bytes_avail = 1024 * $blocks;
 
   // this is gamera -- must save the record with SQL.
-  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_pct`) VALUES (" .
-        $server_id . ", now(), " . $cpu . ", " . $mem . ", " . $host_error_log_errors_count . ", '" . $ingest_tmp_disk_used_pct . "')";
+  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_pct`, `disk_bytes_avail`) VALUES (" .
+        $server_id . ", now(), " . $cpu . ", " . $mem . ", " . $host_error_log_errors_count . ", '" . $ingest_tmp_disk_used_pct . "'," . $bytes_avail . ")";
   $result = mysqli_query($link, $sql);
   if (!$result) {
     die('Invalid query: ' . mysqli_error($link) );

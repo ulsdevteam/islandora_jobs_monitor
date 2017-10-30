@@ -18,9 +18,10 @@ $mem = trim(shell_exec($command));
 $command = '/opt/islandora_cron/cpu_check.sh';
 $cpu = trim(shell_exec($command))/100;
 
-$command = 'df -P | grep "/filestore" | gawk \'{ print $5 }\'';
-$disk_used_pct = str_replace("%", "", trim(shell_exec($command)));
-
+$command = 'df -P | grep "/filestore" | gawk \'{ print $4, $5 }\'';
+$disk_fields = str_replace("%", "", trim(shell_exec($command)));
+@list($blocks, $disk_used_pct) = explode(" ", $disk_fields);
+$bytes_avail = 1024 * $blocks;
 
 /**
  * Step 2. Post the results to the server that is reporting (specified by the
@@ -29,7 +30,7 @@ $disk_used_pct = str_replace("%", "", trim(shell_exec($command)));
 // I think that the "ip_login" module does not pass any posted variables to the
 // redirected-to page and loses them when the /user login page is processed.  The
 // easy way around this is to post the values as $_GET
-$command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&disk_used_pct=" . $disk_used_pct . "' >/dev/null 2>&1";
+$command = "wget '" . $server_monitor . "islandora/islandora_job_monitor/api/serverhealth/?cpu=" . $cpu . "&memory=" . $mem . "&disk_used_pct=" . $disk_used_pct . "&disk_bytes_avail=" . $bytes_avail . "' >/dev/null 2>&1";
 $output = array();
 exec($command, $output, $return);
 
