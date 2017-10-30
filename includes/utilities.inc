@@ -60,3 +60,41 @@ function islandora_jobs_monitor_command_text_of_master_command($current_master_c
   }
   return $command_text;
 }
+
+/**
+ * Convert bytes to human readable format.
+ *
+ * XXX: Shouldn't Drupal's format_size() be preferred?
+ *
+ * @param int $bytes
+ *   Size in bytes to convert
+ * @param int $precision
+ *   The amount of decimal precision to show.
+ *
+ * @return string
+ *   Human readable size.
+ */
+function islandora_jobs_monitor_bytes_to_human_readable($bytes, $precision = 2) {
+  $kilobyte = 1024;
+  $megabyte = $kilobyte * 1024;
+  $gigabyte = $megabyte * 1024;
+  $terabyte = $gigabyte * 1024;
+  if (($bytes) && ($bytes >= 0) && ($bytes < $kilobyte)) {
+    return $bytes . ' B';
+  }
+  elseif (($bytes >= $kilobyte) && ($bytes < $megabyte)) {
+    return round($bytes / $kilobyte, $precision) . ' KiB';
+  }
+  elseif (($bytes >= $megabyte) && ($bytes < $gigabyte)) {
+    return round($bytes / $megabyte, $precision) . ' MiB';
+  }
+  elseif (($bytes >= $gigabyte) && ($bytes < $terabyte)) {
+    return round($bytes / $gigabyte, $precision) . ' GiB';
+  }
+  elseif ($bytes >= $terabyte) {
+    return round($bytes / $terabyte, $precision) . ' TiB';
+  }
+  else {
+    return (($bytes) ? $bytes : '?'). ' B';
+  }
+}
