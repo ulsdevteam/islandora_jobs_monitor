@@ -152,6 +152,7 @@ function islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname) {
       $server_id . ", '" . islandora_jobs_monitor_safe_qstring($link, $pid) .
       "', '" . islandora_jobs_monitor_safe_qstring($link, $jobname) . "', now())";
 
+  $result = mysqli_query($link, $sql);
   mysqli_close($link);
 }
 
