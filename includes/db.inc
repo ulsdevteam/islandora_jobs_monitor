@@ -156,6 +156,26 @@ function islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname) {
   mysqli_close($link);
 }
 
+/**
+ * This will add the record to the `host_gearman_job` table for the current job.
+ *
+ * @param string $server_id
+ *   The server_id of the server record
+ * @param string $pid
+ *   The PID value for the object being processed
+ * @param string $jobname
+ *   The name of the job that was just started.
+ */
+function islandora_jobs_monitor_completed_job_record($server_id, $pid, $jobname) {
+  $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
+
+  $sql = "UPDATE `host_gearman_job` SET `completed` = now() WHERE `server_id` = " . $server_id .
+      " AND  `PID` = '" . islandora_jobs_monitor_safe_qstring($link, $pid) . "' AND " .
+      "`job_name` = '" . islandora_jobs_monitor_safe_qstring($link, $jobname) . "'";
+
+  $result = mysqli_query($link, $sql);
+  mysqli_close($link);
+}
 
 function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_values) {
   $server_id = islandora_jobs_monitor_get_server_id_of_ip($ip_address);
