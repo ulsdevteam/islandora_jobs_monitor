@@ -232,7 +232,7 @@ function islandora_jobs_monitor_islandora_job_started($payload) {
   module_load_include('inc', 'islandora_jobs_monitor', 'includes/db');
   // Use the $jobname and the ip_address to create a record in the
   // `host_gearman_job` table that matches the server that has this ip_address.
-  $server_id = islandora_jobs_monitor_get_server_id_of_ip($_SERVER['SERVER_ADDR']);
+  $server_id = islandora_jobs_monitor_get_server_id_of_ip(gethostbyname(gethostname()));
   if ($server_id) {
     $payload_as_arr = json_decode($payload, true);
     $jobname = $payload_as_arr['func'];
@@ -244,7 +244,7 @@ function islandora_jobs_monitor_islandora_job_started($payload) {
     islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname);
   }
   else {
-    $variables = array('@ip_address' => $_SERVER['SERVER_ADDR']);
+    $variables = array('@ip_address' => gethostbyname(gethostname()));
     watchdog('islandora_jobs_monitor', 'There was no record in `islandora_jobs_monitor`.`servers` for ip_address = "@ip_address."', $variables, WATCHDOG_ERROR);
   }
 }
