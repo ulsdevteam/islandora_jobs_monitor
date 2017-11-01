@@ -122,7 +122,7 @@ function islandora_jobs_monitor_get_jobs_rows() {
  */
 function islandora_jobs_monitor_get_server_id_of_ip($ip_address) {
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
-  $server_id = 0;
+  $server_id = FALSE;
   
   $sql = "SELECT server_id FROM servers WHERE ip_address = '" . islandora_jobs_monitor_safe_qstring($link, $ip_address) . "'";
   $result = mysqli_query($link, $sql);
