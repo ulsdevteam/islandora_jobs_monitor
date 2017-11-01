@@ -252,6 +252,8 @@ function islandora_jobs_monitor_islandora_job_started($payload) {
 function islandora_jobs_monitor_islandora_job_finished($pid_and_job) {
   if (is_array($pid_and_job)) {
     module_load_include('inc', 'islandora_jobs_monitor', 'includes/db');
+    $pid = $pid_and_job['pid'];
+    $jobname = $pid_and_job['job'];
     $server_id = islandora_jobs_monitor_get_server_id_of_ip(gethostbyname(gethostname()));
     islandora_jobs_monitor_completed_job_record($server_id, $pid, $jobname);
   }

@@ -4,7 +4,9 @@ To gather and report health and job processing for relevant jobs servers.
 
 This module should be installed on each of the gearman worker servers as well as the gearman master server and part of the code can also be installed on the Fedora server in order to send the health values back to the underlying database.
 
-Since this module only works with gearman (and the islandora_jobs module), but **not all servers** in the stack have that module installed, the dependency on that module is not enforced.
+Since this module only works with gearman: http://gearman.org/getting-started/ and the islandora_job module: https://github.com/discoverygarden/islandora_job, but **not all servers** in the stack have that module installed, the dependency on that module is not enforced.
+
+Another dependency for the gearman master server is the **ip login** module: https://www.drupal.org/project/ip_login.  Because this module is not needed for any of the servers other than the gearman master server, this is not a module dependency.
 
 ## Configuration
 The configuration is slightly complex and is made up of three primary pieces.
@@ -35,7 +37,8 @@ Other servers could be configured to be included in this as well (with the conne
 ### The CRON jobs
 On various machines, the required CRON jobs are different.
 
-The "master" machine that runs the `gearmand` service would run two CRON jobs.  The first one runs once an hour to send the last 100 lines of the apache error_log to the `host_error_log` table.  The other CRON job would run every 5 minutes to report the health metrics.  These metrics are **CPU Usage %**, **Memory Usage %**, and **Disk usage %** (for /ingest/tmp partition). 
+#### gearman master CRON jobs
+The gearman master machine that runs the `gearmand` service would run two CRON jobs.  The first one runs once an hour to send the last 100 lines of the apache error_log to the `host_error_log` table.  The other CRON job would run every 5 minutes to report the health metrics.  These metrics are **CPU Usage %**, **Memory Usage %**, **Disk usage %**, and **Disk space**. 
 **Root crontab**:
 ```
 # copy the last 100 lines of error log to temp file that apache can access.  this is for the islandora_jobs_monitor.
@@ -48,6 +51,7 @@ The "master" machine that runs the `gearmand` service would run two CRON jobs.  
 */5 * * * * /usr/bin/php /var/www/html/drupal_gamera_sandbox/sites/all/modules/islandora_jobs_monitor/cron/report_serverhealth.php
 ```
 
+#### gearman worker CRON jobs
 On a gearman worker machine, there would be two CRON jobs.  The first one runs once an hour to send the last 100 lines of the apache error_log to the `host_error_log` table.  The other CRON job would run every 5 minutes to report the health metrics.  These metrics are **CPU Usage %**, **Memory Usage %**, and **Disk usage %** (for the main partition).
 **Root crontab**:
 ```
@@ -59,6 +63,7 @@ On a gearman worker machine, there would be two CRON jobs.  The first one runs o
 */5 * * * * /usr/bin/php /var/www/html/drupal7/sites/all/modules/islandora_jobs_monitor/cron/report_serverhealth.php
 ```
 
+#### fedora CRON job
 The fedora machine does not have an apache error log, so it would only have one CRON job that runs every 5 minutes to report the health metrics.  These metrics are **CPU Usage %**, **Memory Usage %**, and **Disk usage %** (relative to the fedora datastore).
 ```
 # To get the server health metrics to report back to islandora_jobs_monitor

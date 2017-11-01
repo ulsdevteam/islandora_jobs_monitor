@@ -45,8 +45,9 @@ if ($row = mysqli_fetch_assoc($result)) {
  * Step 2. Remove any `host_gearman_job` or `host_server_health` records for
  *         this server that are more than 1 hr old.
  */
-$sql = "DELETE FROM `host_server_health` WHERE server_id = " . $server_id . " AND timestamp < (UNIX_TIMESTAMP() - 3600)";
-mysqli_query($link, $sql);
+// This code has been removed -- the records should not be deleted, but updated
+// to have a completed timestamp.  The display of active jobs will filter to
+// only display records that have NULL for completed.
 
 /**
  * Step 3. Get CPU % and Memory % and update `host_server_health`.
