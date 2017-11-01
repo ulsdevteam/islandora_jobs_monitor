@@ -96,7 +96,7 @@ function islandora_jobs_monitor_get_jobs_rows() {
          "FROM servers s " . 
          "LEFT OUTER JOIN host_gearman_job j ON (j.server_id = s.server_id) " .
          "WHERE s.is_worker = 1 and j.completed IS NULL " .
-         "ORDER BY j.started DESC";
+         "ORDER BY j.started DESC LIMIT 100";
   $result = mysqli_query($link, $sql);
   if (!$result) {
     islandora_jobs_monitor_sql_error_die($link, $sql);
