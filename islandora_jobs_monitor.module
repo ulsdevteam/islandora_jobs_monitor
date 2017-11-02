@@ -186,7 +186,18 @@ function islandora_jobs_monitor_permission() {
 function islandora_jobs_monitor_get_databaselink($db_section = 'default') {
   global $databases;
   // Use the settings.php file for this install.
-  $settings_file = variable_get('islandora_jobs_monitor_settings_file', '/var/www/html/drupal_gamera_sandbox/sites/gamera.library.pitt.edu/settings.php');
+  $here = __FILE__;
+  @list($sites_all_folder, $junk) = explode("/all/", $here);
+  // Try the gmworker folder path - should only exist on gmworkers
+  $settings_file = $sites_all_folder . '/gmworker/settings.php';
+  if (!file_exists($settings_file)) {
+    $settings_file = $sites_all_folder . '/gamera/settings.php';
+    if (!file_exists($settings_file)) {
+      $settings_file = '';
+    }
+  }
+
+  //  $settings_file = variable_get('islandora_jobs_monitor_settings_file', '/var/www/html/drupal_gamera_sandbox/sites/gamera.library.pitt.edu/settings.php');
   if (!$settings_file) {
     drupal_set_message('The settings file value has not been set.  It is needed in order ' .
       'to be able to run the drush commands with the appropriate include path. ' .

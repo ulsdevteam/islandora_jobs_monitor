@@ -27,16 +27,16 @@ function islandora_jobs_monitor_admin_form() {
       t('There is NOT any password value.  FTP will not work without a valid password.'));
 
   $form = array(
-    'settings_file' => array(
-      '#type' => 'textfield',
-      '#title' => t('settings.php File'),
-      '#description' => t('Full path to the site\'s settings.php file.  Usually this would ' .
-        'be located under the /var/www/drupal7/sites/default/settings.php, but for a site ' .
-        'that has a specific "sites" folder, that must be provided here.  This is ' .
-        'needed in order to read the database settings for the ' .
-        '`islandora_jobs_monitor` database.'),
-      '#default_value' => variable_get('islandora_jobs_monitor_settings_file', ''),
-    ),
+//    'settings_file' => array(
+//      '#type' => 'textfield',
+//      '#title' => t('settings.php File'),
+//      '#description' => t('Full path to the site\'s settings.php file.  Usually this would ' .
+//        'be located under the /var/www/drupal7/sites/default/settings.php, but for a site ' .
+//        'that has a specific "sites" folder, that must be provided here.  This is ' .
+//        'needed in order to read the database settings for the ' .
+//        '`islandora_jobs_monitor` database.'),
+//      '#default_value' => variable_get('islandora_jobs_monitor_settings_file', ''),
+//    ),
     'submit' => array(
       '#type' => 'submit',
       '#value' => t('Save configuration'),
@@ -65,11 +65,11 @@ function islandora_jobs_monitor_admin_form_submit(array $form, array &$form_stat
   $id = $form_state['triggering_element']['#id'];
   switch ($id) {
     case 'edit-submit':
-      variable_set('islandora_jobs_monitor_settings_file', $form_state['values']['settings_file']);
+      // variable_set('islandora_jobs_monitor_settings_file', $form_state['values']['settings_file']);
       break;
 
     case 'edit-reset':
-      variable_del('islandora_jobs_monitor_settings_file');
+      // variable_del('islandora_jobs_monitor_settings_file');
       break;
   }
   // Set this message after the folders may be created in case there are any error messages.
