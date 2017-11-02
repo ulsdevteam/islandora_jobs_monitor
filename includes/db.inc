@@ -170,9 +170,10 @@ function islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname) {
 function islandora_jobs_monitor_completed_job_record($server_id, $pid, $jobname) {
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
 
-  $sql = "UPDATE `host_gearman_job` SET `completed` = now() WHERE `server_id` = " . $server_id .
+  $sql = "UPDATE `host_gearman_job` SET `completed` = now() WHERE " . // `server_id` = " . $server_id .
       " AND  `PID` = '" . islandora_jobs_monitor_safe_qstring($link, $pid) . "' AND " .
-      "`job_name` = '" . islandora_jobs_monitor_safe_qstring($link, $jobname) . "'";
+      "`job_name` = '" . islandora_jobs_monitor_safe_qstring($link, $jobname) . "' AND " .
+      "`completed` IS NULL";
 
   $result = mysqli_query($link, $sql);
   mysqli_close($link);
