@@ -189,10 +189,11 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
     $error_log_errors_in_last_100 = isset($save_values['errors']) ? $save_values['errors'] : 0;
     $disk_used_pct = isset($save_values['disk_used_pct']) ? $save_values['disk_used_pct'] : 0;
     $disk_bytes_avail = isset($save_values['disk_bytes_avail']) ? $save_values['disk_bytes_avail'] : 0;
+    $disk_size = isset($save_values['disk_size']) ? $save_values['disk_size'] : 0;
 
 
-    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_pct`, `disk_bytes_avail`) VALUES (" .
-        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '" . $disk_used_pct . "', " . $disk_bytes_avail . ")";
+    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_pct`, `disk_bytes_avail`, `disk_size`) VALUES (" .
+        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '" . $disk_used_pct . "', " . $disk_bytes_avail . ", " . $disk_size)";
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }
