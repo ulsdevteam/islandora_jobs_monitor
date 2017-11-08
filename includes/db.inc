@@ -193,7 +193,7 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
 
 
     $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_pct`, `disk_bytes_avail`, `disk_size`) VALUES (" .
-        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '" . $disk_used_pct . "', " . $disk_bytes_avail . ", " . $disk_size)";
+        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '" . $disk_used_pct . "', " . $disk_bytes_avail . ", " . $disk_size . ")";
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }
