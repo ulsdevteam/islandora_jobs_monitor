@@ -28,10 +28,10 @@ function islandora_jobs_monitor_page() {
 
   foreach ($hosts as $host) {
     $metrics = islandora_jobs_monitor_get_health_metrics($host['server_id']);
-    // Convert the errors_in_last_100 value into a link that will serve up
-    // the related last 100 lines from that server's error_log file.
+    // Convert the errors_in_last_1000 value into a link that will serve up
+    // the related last 1000 lines from that server's error_log file.
     $err_log_link_options['attributes']['title'] = 'View "' . $host['name'] . '" error log';
-    $host['errors_in_last_100'] = l($host['errors_in_last_100'], '/islandora/islandora_job_monitor/error_log/' . $host['server_id'], $err_log_link_options);
+    $host['errors_in_last_1000'] = l($host['errors_in_last_1000'], '/islandora/islandora_job_monitor/error_log/' . $host['server_id'], $err_log_link_options);
 
     $worker = $host['is_worker'];
     // Unset these either way, they do not need to be used in the themed output.

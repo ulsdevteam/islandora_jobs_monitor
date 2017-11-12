@@ -30,7 +30,7 @@ function islandora_jobs_monitor_get_all_hosts() {
   $sql = "SELECT s.server_id, s.name, s.is_worker, s.hostname, s.ip_address, " .
          " (SELECT h.disk_used_pct FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `disk_used_pct`, " .
          " (SELECT h.disk_bytes_avail FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `disk_bytes_avail`, " .
-         " (SELECT h.error_log_errors_in_last_100 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `errors_in_last_100` " .
+         " (SELECT h.error_log_errors_in_last_1000 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `errors_in_last_1000` " .
          "FROM servers s " .
          "LEFT OUTER JOIN host_error_log e ON (e.server_id = s.server_id)";
   $result = mysqli_query($link, $sql);
@@ -185,13 +185,13 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
     $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
     $cpu_percentage = isset($save_values['cpu']) ? $save_values['cpu'] : 0;
     $memory_percentage = isset($save_values['memory']) ? $save_values['memory'] : 0;
-    $error_log_errors_in_last_100 = isset($save_values['errors']) ? $save_values['errors'] : 0;
+    $error_log_errors_in_last_1000 = isset($save_values['errors']) ? $save_values['errors'] : 0;
     $disk_used_pct = isset($save_values['disk_used_pct']) ? $save_values['disk_used_pct'] : 0;
     $disk_bytes_avail = isset($save_values['disk_bytes_avail']) ? $save_values['disk_bytes_avail'] : 0;
 
 
-    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_pct`, `disk_bytes_avail`) VALUES (" .
-        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '" . $disk_used_pct . "', " . $disk_bytes_avail . ")";
+    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_1000`, `disk_used_pct`, `disk_bytes_avail`) VALUES (" .
+        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_1000 . ", '" . $disk_used_pct . "', " . $disk_bytes_avail . ")";
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }
@@ -210,14 +210,14 @@ function islandora_jobs_monitor_delete_old_records($server_id) {
 }
 
 /**
- * Gets the error_log_last_100_lines value related to the provided server_id.
+ * Gets the error_log_last_1000_lines value related to the provided server_id.
  *
  * @param type $server_id
  * @return string
  */
 function islandora_jobs_monitor_get_error_log($server_id) {
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
-  $sql = "SELECT e.error_log_last_100_lines `error_log`, s.name `host_name` " .
+  $sql = "SELECT e.error_log_last_1000_lines `error_log`, s.name `host_name` " .
          "FROM servers s LEFT OUTER JOIN host_error_log e ON (e.server_id = s.server_id) " .
          "WHERE s.server_id = " . islandora_jobs_monitor_safe_qstring($link, $server_id);
   $result = mysqli_query($link, $sql);

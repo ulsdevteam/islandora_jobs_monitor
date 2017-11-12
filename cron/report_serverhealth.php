@@ -63,10 +63,10 @@ $cpu = trim(shell_exec($command) / 100);
  * Step 4. Update the record in `host_error_log` (if the file is newer than the record)
  *         and save this error_log section to the database.
  */
-$host_error_log = file_get_contents('/tmp/error_log_last100.txt');
+$host_error_log = file_get_contents('/tmp/error_log_last1000.txt');
 // Save this value directly to the `host_error_log` table
 $host_error_log_errors_count = substr_count(strtolower($host_error_log), 'error');
-$sql = "REPLACE INTO host_error_log (`server_id`, `error_log_last_100_lines`) VALUES (" . 
+$sql = "REPLACE INTO host_error_log (`server_id`, `error_log_last_1000_lines`) VALUES (" . 
        $server_id . ", '" . mysqli_real_escape_string($link, addslashes($host_error_log)) . "')";
 $result = mysqli_query($link, $sql);
 
@@ -95,7 +95,7 @@ else {
   $bytes_avail = 1024 * $avail_blocks;
 
   // this is gamera -- must save the record with SQL.
-  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_100`, `disk_used_pct`, `disk_bytes_avail`) VALUES (" .
+  $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_1000`, `disk_used_pct`, `disk_bytes_avail`) VALUES (" .
         $server_id . ", now(), " . $cpu . ", " . $mem . ", " . $host_error_log_errors_count . ", '" . $ingest_tmp_disk_used_pct . "'," . $bytes_avail . ")";
   $result = mysqli_query($link, $sql);
   if (!$result) {
