@@ -244,7 +244,7 @@ function islandora_jobs_monitor_islandora_job_started($payload) {
   // Use the $jobname and the ip_address to create a record in the
   // `host_gearman_job` table that matches the server that has this ip_address.
   $server_id = islandora_jobs_monitor_get_server_id_of_ip(gethostbyname(gethostname()));
-  if (!($server_id === FALSE)) {
+  if (($server_id > -1)) {
     // Do not enter the job when this is triggered on the gearman "master" server
     // - which is identified by server_id = 0.
     if ($server_id > 0) {

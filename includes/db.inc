@@ -170,9 +170,10 @@ function islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname) {
 function islandora_jobs_monitor_completed_job_record($server_id, $pid, $jobname) {
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
 
-  $sql = "UPDATE `host_gearman_job` SET `completed` = now() WHERE `server_id` = " . $server_id .
+  $sql = "UPDATE `host_gearman_job` SET `completed` = now() WHERE " . // `server_id` = " . $server_id .
       " AND  `PID` = '" . islandora_jobs_monitor_safe_qstring($link, $pid) . "' AND " .
-      "`job_name` = '" . islandora_jobs_monitor_safe_qstring($link, $jobname) . "'";
+      "`job_name` = '" . islandora_jobs_monitor_safe_qstring($link, $jobname) . "' AND " .
+      "`completed` IS NULL";
 
   $result = mysqli_query($link, $sql);
   mysqli_close($link);
@@ -188,10 +189,11 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
     $error_log_errors_in_last_1000 = isset($save_values['errors']) ? $save_values['errors'] : 0;
     $disk_used_pct = isset($save_values['disk_used_pct']) ? $save_values['disk_used_pct'] : 0;
     $disk_bytes_avail = isset($save_values['disk_bytes_avail']) ? $save_values['disk_bytes_avail'] : 0;
+    $disk_size = isset($save_values['disk_size']) ? $save_values['disk_size'] : 0;
 
 
-    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_1000`, `disk_used_pct`, `disk_bytes_avail`) VALUES (" .
-        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_1000 . ", '" . $disk_used_pct . "', " . $disk_bytes_avail . ")";
+    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_1000`, `disk_used_pct`, `disk_bytes_avail`, `disk_size`) VALUES (" .
+        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_100 . ", '" . $disk_used_pct . "', " . $disk_bytes_avail . ", " . $disk_size . ")";
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }
