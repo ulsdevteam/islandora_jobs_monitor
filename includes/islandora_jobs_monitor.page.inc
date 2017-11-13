@@ -42,11 +42,22 @@ function islandora_jobs_monitor_page() {
     $first_key = array_pop($keys);
     // Add the percent sign to the end of the disk_used_pct value.
     if (isset($host['disk_used_pct'])) {
+      $raw_disk_used = $host['disk_used_pct'];
       $host['disk_used_pct'] = $host['disk_used_pct'] . '% (' . islandora_jobs_monitor_bytes_to_human_readable($host['disk_bytes_avail']) . ' free)';
       unset($host['disk_bytes_avail']);
+    } 
+    else {
+      $raw_disk_used = 0;
     }
     if ($worker) {
       $themed_hosts['workers'][] = theme('islandora_jobs_monitor_themed_worker', array(
+        'gauge' => theme('islandora_jobs_monitor_gauge', array(
+            'gauge_server_id' => 'gauge_' . $host['ip_address'],
+            'disk_used' => $raw_disk_used,
+            'cpu' => ($first_key ? $metrics['cpu_percentages'][$first_key] : 0),
+            'memory' => ($first_key ? $metrics['memory_percentages'][$first_key] : 0)
+          )
+        ),
         'host_record' => $host,
         'control_links' => theme('islandora_jobs_monitor_themed_control_links', array(
           'server_control_links' => islandora_jobs_monitor_get_worker_control_links($server_id),
@@ -63,6 +74,13 @@ function islandora_jobs_monitor_page() {
     }
     else {
       $themed_hosts['master'][] = theme('islandora_jobs_monitor_themed_master', array(
+        'gauge' => theme('islandora_jobs_monitor_gauge', array(
+            'gauge_server_id' => 'gauge_' . $host['ip_address'],
+            'disk_used' => $raw_disk_used,
+            'cpu' => ($first_key ? $metrics['cpu_percentages'][$first_key] : 0),
+            'memory' => ($first_key ? $metrics['memory_percentages'][$first_key] : 0)
+          )
+        ),
         'host_record' => $host,
         'control_links' => ($server_id < 100) ? theme('islandora_jobs_monitor_themed_control_links', array(
           'server_control_links' => islandora_jobs_monitor_get_master_control_links($server_id),

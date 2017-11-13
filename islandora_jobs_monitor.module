@@ -88,6 +88,7 @@ function islandora_jobs_monitor_preprocess_page(&$vars) {
   if (is_array($item)) {
     // For the main monitor page, add a refresh meta tag.
     if ($item['path'] == 'islandora/islandora_job_monitor') {
+      drupal_add_js('https://www.gstatic.com/charts/loader.js');
       $meta_refresh = array(
         '#type' => 'html_tag',
         '#tag' => 'meta',
@@ -127,15 +128,26 @@ function islandora_jobs_monitor_theme() {
     'islandora_jobs_monitor_themed_worker' => array(
       'template' => 'theme/islandora-jobs-monitor-themed-worker',
       'variables' => array(
+        'gauge' => '',
         'host_record' => '',
         'control_links' => '',
         'cpu_values' => '',
         'memory_values' => ''
       ),
     ),
+    'islandora_jobs_monitor_gauge' => array(
+      'template' => 'theme/islandora-jobs-monitor-gauge',
+      'variables' => array(
+        'islandora_jobs_monitor_gauge' => '',
+        'disk_used' => '',
+        'cpu' => '',
+        'memory' => ''
+      ),
+    ),
     'islandora_jobs_monitor_themed_master' => array(
       'template' => 'theme/islandora-jobs-monitor-themed-master',
       'variables' => array(
+        'gauge' => '',
         'host_record' => '',
         'cpu_values' => '',
         'memory_values' => ''
