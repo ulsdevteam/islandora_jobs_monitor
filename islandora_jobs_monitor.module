@@ -205,7 +205,10 @@ function islandora_jobs_monitor_get_databaselink($db_section = 'default') {
   if (!file_exists($settings_file)) {
     $settings_file = $sites_all_folder . '/gamera/settings.php';
     if (!file_exists($settings_file)) {
-      $settings_file = '';
+      $settings_file = $sites_all_folder . '/default/settings.php';
+      if (!file_exists($settings_file)) {     
+        $settings_file = '';
+      }
     }
   }
 
