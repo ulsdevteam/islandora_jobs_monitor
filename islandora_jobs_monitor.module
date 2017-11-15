@@ -264,13 +264,26 @@ function islandora_jobs_monitor_islandora_job_started($payload) {
     // - which is identified by server_id = 0.
     if ($server_id > 0) {
       $payload_as_arr = is_array($payload) ? $payload : json_decode($payload, true);
-      $jobname = $payload_as_arr['func'];
-      $args = $payload_as_arr['args'];
-      if (count($args) > 0) {
-        $pid = $args[0];
+      $jobname = $pid = '';
+      if (isset($payload_as_arr['object_id']) && !isset($payload_as_arr['func'])) {
+        $pid = $payload_as_arr['object_id'];
+        $jobname = "upitt_workflow_generate_ocr_datastreams";
       }
-
-      islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname);
+      elseif (isset($payload_as_arr['func'])) {
+        $jobname = $payload_as_arr['func'];
+        $args = $payload_as_arr['args'];
+        if (count($args) > 0) {
+          $pid = $args[0];
+          islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname);
+        }
+      }
+      if ($jobname && $pid) {
+        islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname);
+      }
+      else {
+        $variables = array('@payload' => print_r($payload_as_arr, true));
+        watchdog('islandora_jobs_monitor', 'The payload coing in to islandora_jobs_monitor_islandora_job_started did not have expected values @payload.', $variables, WATCHDOG_ERROR);
+      }
     }
   }
   else {
