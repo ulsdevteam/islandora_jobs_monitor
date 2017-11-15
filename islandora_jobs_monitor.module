@@ -263,7 +263,7 @@ function islandora_jobs_monitor_islandora_job_started($payload) {
     // Do not enter the job when this is triggered on the gearman "master" server
     // - which is identified by server_id = 0.
     if ($server_id > 0) {
-      $payload_as_arr = json_decode($payload, true);
+      $payload_as_arr = is_array($payload) ? $payload : json_decode($payload, true);
       $jobname = $payload_as_arr['func'];
       $args = $payload_as_arr['args'];
       if (count($args) > 0) {
