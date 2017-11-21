@@ -274,7 +274,6 @@ function islandora_jobs_monitor_islandora_job_started($payload) {
         $args = $payload_as_arr['args'];
         if (count($args) > 0) {
           $pid = $args[0];
-          islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname);
         }
       }
       if ($jobname && $pid) {
