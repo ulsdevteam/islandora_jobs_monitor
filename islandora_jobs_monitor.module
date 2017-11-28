@@ -279,10 +279,6 @@ function islandora_jobs_monitor_islandora_job_started($payload) {
       if ($jobname && $pid) {
         islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname);
       }
-      else {
-        $variables = array('@payload' => print_r($payload_as_arr, true));
-        watchdog('islandora_jobs_monitor', 'The payload coing in to islandora_jobs_monitor_islandora_job_started did not have expected values @payload.', $variables, WATCHDOG_ERROR);
-      }
     }
   }
   else {
