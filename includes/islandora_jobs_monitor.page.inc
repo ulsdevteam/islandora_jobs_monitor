@@ -97,10 +97,11 @@ function islandora_jobs_monitor_page() {
   }
 
   $current_report = islandora_jobs_monitor_get_jobs_report();
-
+  $gearman_queue = islandora_jobs_monitor_get_gearman_queue();
   return theme('islandora_jobs_monitor_page', array(
       'themed_hosts' => $themed_hosts,
       'current_report' => $current_report,
+      'gearman_queue' => $gearman_queue,
   ));
 }
 
@@ -113,10 +114,21 @@ function islandora_jobs_monitor_page() {
 function islandora_jobs_monitor_get_jobs_report() {
   $headers = array('Worker', 'PID', 'Worker Function Name', 'Job Started');
   $rows = islandora_jobs_monitor_get_jobs_rows();
-  $jobs_table = '<h3>Jobs Records</h3>' .
-          theme('table', array('header' => $headers, 'rows' => $rows));
-
+  $jobs_table = theme('table', array('header' => $headers, 'rows' => $rows));
   return $jobs_table;
+}
+
+/**
+ * Create the report based on the available hosts.
+ *
+ * @return array
+ *   'jobs_table': Drupal themed table of gearman jobs in HTML markup.
+ */
+function islandora_jobs_monitor_get_gearman_queue() {
+  $headers = array('unique_key', 'function_name', 'PID');
+  $rows = islandora_jobs_monitor_get_gearman_queue_rows();
+  $gearman_queue = theme('table', array('header' => $headers, 'rows' => $rows));
+  return $gearman_queue;
 }
 
 /**

@@ -108,6 +108,13 @@ function islandora_jobs_monitor_preprocess_page(&$vars) {
       $module_path = drupal_get_path('module', 'islandora_jobs_monitor');
       drupal_add_css($module_path . '/css/islandora_jobs_monitor.css');
       drupal_add_js($module_path . '/js/islandora_jobs_monitor.js');
+      // Next two lines are required for the jquery tabs
+      drupal_add_library('system', 'ui.tabs');
+      drupal_add_js('jQuery(document).ready(function(){
+jQuery("#tabs").tabs();
+});
+', 'inline');
+
       $vars['page']['sidebar'] = array();
     }
   }
@@ -123,6 +130,7 @@ function islandora_jobs_monitor_theme() {
       'variables' => array(
         'themed_hosts' => '',
         'current_report' => '',
+        'gearman_queue' => '',
       ),
     ),
     'islandora_jobs_monitor_themed_worker' => array(

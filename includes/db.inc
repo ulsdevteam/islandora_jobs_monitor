@@ -110,6 +110,41 @@ function islandora_jobs_monitor_get_jobs_rows() {
   return $rows;
 }
 
+function islandora_jobs_monitor_get_gearman_queue_rows() {
+  module_load_include('inc', 'islandora_jobs_monitor', 'includes/utilities');
+  $rows = array();
+
+  $link = islandora_jobs_monitor_get_databaselink('gearman');
+
+  // Must give the row "data" a different alias because 'data' is a special
+  // directive for the table theme code.
+  $sql = "SELECT unique_key, function_name, data `PID` " .
+         "FROM gearman_queue";
+  $result = mysqli_query($link, $sql);
+  if (!$result) {
+    islandora_jobs_monitor_sql_error_die($link, $sql);
+  }
+  while ($row = mysqli_fetch_assoc($result)) {
+    $row['PID'] = islandora_jobs_monitor_data_to_pid($row['PID']);
+    $rows[] = $row;
+  }
+  mysqli_close($link);
+  return $rows;
+}
+
+// Strip down the `data` (PID) field so that only the PID remains
+// {"func":"islandora_job_jobs_islandora_do_derivatives","args":["pitt:31735070049287-0003",[],2],"site":"http:\/\/gamera.library.pitt.edu","uid":"1"}
+function islandora_jobs_monitor_data_to_pid($data) {
+  $parts = explode('"args":', $data);
+  if (isset($parts[1])) {
+    $args = explode(",", $parts[1]);
+    return str_replace(array("[", '"'), "", $args[0]);
+  }
+  else {
+    return "? <i>$data</i>";
+  }
+}
+
 /**
  * This will return the server_id from the islandora_jobs_monitor.servers table.
  *
