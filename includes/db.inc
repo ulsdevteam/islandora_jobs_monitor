@@ -96,7 +96,7 @@ function islandora_jobs_monitor_get_jobs_rows() {
          "FROM servers s " . 
          "LEFT OUTER JOIN host_gearman_job j ON (j.server_id = s.server_id) " .
          "WHERE s.is_worker = 1 and j.completed IS NULL " .
-         "ORDER BY j.started DESC LIMIT 100";
+         "ORDER BY j.started DESC LIMIT 500";
   $result = mysqli_query($link, $sql);
   if (!$result) {
     islandora_jobs_monitor_sql_error_die($link, $sql);
@@ -131,6 +131,30 @@ function islandora_jobs_monitor_get_gearman_queue_rows() {
   mysqli_close($link);
   return $rows;
 }
+
+function islandora_jobs_monitor_get_completed_object_rows() {
+  module_load_include('inc', 'islandora_jobs_monitor', 'includes/utilities');
+  $rows = array();
+
+  $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
+
+  $sql = "SELECT PID, started FROM host_gearman_job WHERE PID NOT LIKE '%-%' " .
+         "GROUP BY PID ORDER BY started DESC LIMIT 500";
+  $result = mysqli_query($link, $sql);
+  if (!$result) {
+    islandora_jobs_monitor_sql_error_die($link, $sql);
+  }
+  $link_options = array(
+    'attributes' => array('target'=>'_blank'),
+  );
+  while ($row = mysqli_fetch_assoc($result)) {
+    $row['PID'] = l($row['PID'], '/islandora/object/' . $row['PID'], $link_options);
+    $rows[] = $row;
+  }
+  mysqli_close($link);
+  return $rows;
+}
+
 
 // Strip down the `data` (PID) field so that only the PID remains
 // {"func":"islandora_job_jobs_islandora_do_derivatives","args":["pitt:31735070049287-0003",[],2],"site":"http:\/\/gamera.library.pitt.edu","uid":"1"}

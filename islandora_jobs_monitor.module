@@ -130,7 +130,9 @@ function islandora_jobs_monitor_theme() {
       'variables' => array(
         'themed_hosts' => '',
         'current_report' => '',
+        'queue_count' => 0,
         'gearman_queue' => '',
+        'completed_objects' => '',
       ),
     ),
     'islandora_jobs_monitor_themed_worker' => array(

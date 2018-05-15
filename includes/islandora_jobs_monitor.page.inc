@@ -98,10 +98,13 @@ function islandora_jobs_monitor_page() {
 
   $current_report = islandora_jobs_monitor_get_jobs_report();
   $gearman_queue = islandora_jobs_monitor_get_gearman_queue();
+  $completed_objects = islandora_jobs_monitor_get_completed_objects();
   return theme('islandora_jobs_monitor_page', array(
       'themed_hosts' => $themed_hosts,
-      'current_report' => $current_report,
-      'gearman_queue' => $gearman_queue,
+      'current_report' => $current_report['jobs_table'],
+      'gearman_queue' => $gearman_queue['gearman_queue'],
+      'queue_count' => count($gearman_queue['rows']),
+      'completed_objects' => $completed_objects['completed_objects'],
   ));
 }
 
@@ -115,7 +118,7 @@ function islandora_jobs_monitor_get_jobs_report() {
   $headers = array('Worker', 'PID', 'Worker Function Name', 'Job Started');
   $rows = islandora_jobs_monitor_get_jobs_rows();
   $jobs_table = theme('table', array('header' => $headers, 'rows' => $rows));
-  return $jobs_table;
+  return array('jobs_table' => $jobs_table);
 }
 
 /**
@@ -128,7 +131,17 @@ function islandora_jobs_monitor_get_gearman_queue() {
   $headers = array('unique_key', 'function_name', 'PID');
   $rows = islandora_jobs_monitor_get_gearman_queue_rows();
   $gearman_queue = theme('table', array('header' => $headers, 'rows' => $rows));
-  return $gearman_queue;
+  return array(
+      'gearman_queue' => $gearman_queue,
+      'rows' => $rows,
+    );
+}
+
+function islandora_jobs_monitor_get_completed_objects() {
+  $headers = array('PID', 'started');
+  $rows = islandora_jobs_monitor_get_completed_object_rows();
+  $gearman_queue = theme('table', array('header' => $headers, 'rows' => $rows));
+  return array('completed_objects' => $gearman_queue);
 }
 
 /**

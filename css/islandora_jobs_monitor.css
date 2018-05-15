@@ -14,12 +14,12 @@
     color: #ff0000;
 }
 
-.workers, .masters, .monitor_report, .gearman_queue {
+.workers, .masters, .monitor_report, .tab_page {
     clear: both;
 }
 
 .tab-report {
-    clear:both
+    clear:both;
 }
 
 .workers label, .masters label {
