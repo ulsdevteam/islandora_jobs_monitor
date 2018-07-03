@@ -77,3 +77,10 @@
 .server_controls a {
     color: #693;
 }
+
+tr.group_even {
+    background-color: #fbfbfb;
+}
+tr.group_odd {
+    background-color: #e6e6e6;
+}

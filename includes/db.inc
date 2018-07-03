@@ -155,6 +155,28 @@ function islandora_jobs_monitor_get_completed_object_rows() {
   return $rows;
 }
 
+function islandora_jobs_monitor_get_recent_transaction_rows() {
+  module_load_include('inc', 'islandora_jobs_monitor', 'includes/utilities');
+  $rows = array();
+
+  $link = islandora_jobs_monitor_get_databaselink('mysql_new_workflow');
+
+  $sql = 'SELECT t.timestamp, ta.description, i.do_id ' .
+         'FROM transaction t ' .
+         'JOIN transaction_actions ta ON (ta.id = t.transaction_action_id) ' .
+         'JOIN item i ON (i.id = t.item_id) ' .
+         'WHERE t.transaction_action_id IN (3, 147, 145, 146, 128,126, 127, 117) ' .
+         'ORDER BY t.timestamp DESC LIMIT 1000';
+  $result = mysqli_query($link, $sql);
+  if (!$result) {
+    islandora_jobs_monitor_sql_error_die($link, $sql);
+  }
+  while ($row = mysqli_fetch_assoc($result)) {
+    $rows[] = $row;
+  }
+  mysqli_close($link);
+  return $rows;
+}
 
 // Strip down the `data` (PID) field so that only the PID remains
 // {"func":"islandora_job_jobs_islandora_do_derivatives","args":["pitt:31735070049287-0003",[],2],"site":"http:\/\/gamera.library.pitt.edu","uid":"1"}
@@ -337,3 +359,4 @@ function islandora_jobs_monitor_put_master_command($server_id, $command) {
 
   mysqli_close($link);
 }
+

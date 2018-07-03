@@ -133,6 +133,7 @@ function islandora_jobs_monitor_theme() {
         'queue_count' => 0,
         'gearman_queue' => '',
         'completed_objects' => '',
+        'recent_transactions' => '',
       ),
     ),
     'islandora_jobs_monitor_themed_worker' => array(
@@ -232,7 +233,7 @@ function islandora_jobs_monitor_get_databaselink($db_section = 'default') {
   require_once($settings_file);
 
   if (count($databases) < 1 || !array_key_exists($db_section, $databases['default'])) {
-    die('Database settings not found at ' . $settings_file . '.');
+    die('Database settings not found for section "' . $db_section . '" at ' . $settings_file . '.');
   }
 
   $db_host = $databases['default'][$db_section]['host'];

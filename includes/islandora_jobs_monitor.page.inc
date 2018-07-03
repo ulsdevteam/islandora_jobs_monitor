@@ -99,12 +99,14 @@ function islandora_jobs_monitor_page() {
   $current_report = islandora_jobs_monitor_get_jobs_report();
   $gearman_queue = islandora_jobs_monitor_get_gearman_queue();
   $completed_objects = islandora_jobs_monitor_get_completed_objects();
+  $recent_transactions = islandora_jobs_monitor_get_recent_transactions();
   return theme('islandora_jobs_monitor_page', array(
       'themed_hosts' => $themed_hosts,
       'current_report' => $current_report['jobs_table'],
       'gearman_queue' => $gearman_queue['gearman_queue'],
       'queue_count' => count($gearman_queue['rows']),
       'completed_objects' => $completed_objects['completed_objects'],
+      'recent_transactions' => $recent_transactions['recent_transactions'],
   ));
 }
 
@@ -142,6 +144,44 @@ function islandora_jobs_monitor_get_completed_objects() {
   $rows = islandora_jobs_monitor_get_completed_object_rows();
   $gearman_queue = theme('table', array('header' => $headers, 'rows' => $rows));
   return array('completed_objects' => $gearman_queue);
+}
+
+function islandora_jobs_monitor_get_recent_transactions() {
+  $headers = array('timestamp', 'description', 'PID');
+  $rows = islandora_jobs_monitor_get_recent_transaction_rows();
+  $pids = array();
+  foreach ($rows as $key => $row) {
+    $this_pid = $row['do_id'];
+    $last_dash = strrpos($this_pid, '-');
+    if ($last_dash === FALSE) {
+      $pid = $this_pid;
+    }
+    else {
+      $pid = substr($this_pid, 0, $last_dash);
+    }
+    if (array_search($pid, $pids) === FALSE) {
+      $pids[$pid][] = $row;
+    }
+  }
+  $toggle = FALSE;
+  $grouped_rows = array();
+  $link_options = array(
+    'attributes' => array('target'=>'_blank'),
+  );
+  foreach ($pids as $pid_key => $pid_rows) {
+    $toggle = !$toggle;
+    foreach ($pid_rows as $pid_row) {
+      $row_class = ($toggle) ? 'group_even' : 'group_odd';
+      $grouped_rows[] = array('data' => array(
+          $pid_row['timestamp'],
+          $pid_row['description'],
+          l('pitt:' . $pid_row['do_id'], '/islandora/object/pitt:' . $pid_row['do_id'], $link_options),
+      ), 'class' => array($row_class));
+    }
+  }
+
+  $recent_transactions = theme('table', array('header' => $headers, 'rows' => $grouped_rows));
+  return array('recent_transactions' => $recent_transactions);
 }
 
 /**
