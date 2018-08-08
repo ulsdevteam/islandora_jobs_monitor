@@ -143,7 +143,18 @@ function islandora_jobs_monitor_theme() {
         'host_record' => '',
         'control_links' => '',
         'cpu_values' => '',
-        'memory_values' => ''
+        'memory_values' => '',
+        'running' => 0,
+      ),
+    ),
+    'islandora_jobs_monitor_themed_master' => array(
+      'template' => 'theme/islandora-jobs-monitor-themed-master',
+      'variables' => array(
+        'gauge' => '',
+        'host_record' => '',
+        'cpu_values' => '',
+        'memory_values' => '',
+        'running' => 0,
       ),
     ),
     'islandora_jobs_monitor_gauge' => array(
@@ -153,15 +164,6 @@ function islandora_jobs_monitor_theme() {
         'disk_used' => '',
         'cpu' => '',
         'memory' => ''
-      ),
-    ),
-    'islandora_jobs_monitor_themed_master' => array(
-      'template' => 'theme/islandora-jobs-monitor-themed-master',
-      'variables' => array(
-        'gauge' => '',
-        'host_record' => '',
-        'cpu_values' => '',
-        'memory_values' => ''
       ),
     ),
     'islandora_jobs_monitor_themed_0_to_100_metrics' => array(

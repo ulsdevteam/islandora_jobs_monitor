@@ -30,7 +30,8 @@ function islandora_jobs_monitor_get_all_hosts() {
   $sql = "SELECT s.server_id, s.name, s.is_worker, s.hostname, s.ip_address, " .
          " (SELECT h.disk_used_pct FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `disk_used_pct`, " .
          " (SELECT h.disk_bytes_avail FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `disk_bytes_avail`, " .
-         " (SELECT h.error_log_errors_in_last_1000 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `errors_in_last_1000` " .
+         " (SELECT h.error_log_errors_in_last_1000 FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `errors_in_last_1000`, " .
+         " (SELECT h.gearman_running FROM host_server_health h WHERE h.server_id = s.server_id ORDER BY timestamp DESC LIMIT 1) `gearman_running` " .
          "FROM servers s " .
          "LEFT OUTER JOIN host_error_log e ON (e.server_id = s.server_id)";
   $result = mysqli_query($link, $sql);
@@ -60,7 +61,7 @@ function islandora_jobs_monitor_get_health_metrics($server_id) {
   );
   $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
   
-  $sql = "SELECT timestamp, cpu_percentage `cpu_percentages`, memory_percentage `memory_percentages` " .
+  $sql = "SELECT timestamp, cpu_percentage `cpu_percentages`, memory_percentage `memory_percentages`, gearman_running `gearman_running` " .
          "FROM host_server_health WHERE server_id = " . $server_id . " " .
          "ORDER BY timestamp DESC LIMIT 20";
   $result = mysqli_query($link, $sql);
@@ -70,10 +71,12 @@ function islandora_jobs_monitor_get_health_metrics($server_id) {
   while ($row = mysqli_fetch_assoc($result)) {
     $rows['cpu_percentages'][$row['timestamp']] = $row['cpu_percentages'];
     $rows['memory_percentages'][$row['timestamp']] = $row['memory_percentages'];
+    $rows['gearman_running'][$row['timestamp']] = $row['gearman_running'];
   }
 
   $rows['cpu_percentages'] = array_reverse($rows['cpu_percentages']);
   $rows['memory_percentages'] = array_reverse($rows['memory_percentages']);
+  $rows['gearman_running'] = array_reverse($rows['gearman_running']);
   mysqli_close($link);
   return $rows;
 }
@@ -271,10 +274,14 @@ function islandora_jobs_monitor_save_server_healthrecord($ip_address, $save_valu
     $disk_used_pct = isset($save_values['disk_used_pct']) ? $save_values['disk_used_pct'] : 0;
     $disk_bytes_avail = isset($save_values['disk_bytes_avail']) ? $save_values['disk_bytes_avail'] : 0;
     $disk_size = isset($save_values['disk_size']) ? $save_values['disk_size'] : 0;
+    $gearman_running = isset($save_values['gearman_running']) ? $save_values['gearman_running'] : 0;
 
-
-    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, `cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_1000`, `disk_used_pct`, `disk_bytes_avail`, `disk_size`) VALUES (" .
-        $server_id . ", now(), " . $cpu_percentage . ", " . $memory_percentage . ", " . $error_log_errors_in_last_1000 . ", '" . $disk_used_pct . "', " . $disk_bytes_avail . ", " . $disk_size . ")";
+    $sql = "INSERT INTO `host_server_health` (`server_id`, `timestamp`, " .
+           "`cpu_percentage`, `memory_percentage`, `error_log_errors_in_last_1000`, " .
+           "`disk_used_pct`, `disk_bytes_avail`, `disk_size`, `gearman_running`) " .
+           "VALUES (" . $server_id . ", now(), " . $cpu_percentage . ", " .
+           $memory_percentage . ", " . $error_log_errors_in_last_1000 . ", '" .
+           $disk_used_pct . "', " . $disk_bytes_avail . ", " . $disk_size . ", " . $gearman_running . ")";
     $result = mysqli_query($link, $sql);
     mysqli_close($link);
   }

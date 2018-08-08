@@ -18,6 +18,14 @@
     clear: both;
 }
 
+.running {
+    background-color: #e0f3e5 !important;
+}
+
+.stopped {
+    background-color: #ffe7e7 !important;
+}
+
 .tab-report {
     clear:both;
 }

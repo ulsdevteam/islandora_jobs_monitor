@@ -55,10 +55,11 @@ function islandora_jobs_monitor_page() {
             'gauge_server_id' => 'gauge_' . $host['ip_address'],
             'disk_used' => $raw_disk_used,
             'cpu' => ($first_key ? $metrics['cpu_percentages'][$first_key] : 0),
-            'memory' => ($first_key ? $metrics['memory_percentages'][$first_key] : 0)
+            'memory' => ($first_key ? $metrics['memory_percentages'][$first_key] : 0),
           )
         ),
         'host_record' => $host,
+        'running' => ($first_key ? $metrics['gearman_running'][$first_key] : 0),
         'control_links' => theme('islandora_jobs_monitor_themed_control_links', array(
           'server_control_links' => islandora_jobs_monitor_get_worker_control_links($server_id),
         )),
@@ -78,10 +79,11 @@ function islandora_jobs_monitor_page() {
             'gauge_server_id' => 'gauge_' . $host['ip_address'],
             'disk_used' => $raw_disk_used,
             'cpu' => ($first_key ? $metrics['cpu_percentages'][$first_key] : 0),
-            'memory' => ($first_key ? $metrics['memory_percentages'][$first_key] : 0)
+            'memory' => ($first_key ? $metrics['memory_percentages'][$first_key] : 0),
           )
         ),
         'host_record' => $host,
+        'running' => ($first_key ? $metrics['gearman_running'][$first_key] : 0),
         'control_links' => ($server_id < 100) ? theme('islandora_jobs_monitor_themed_control_links', array(
           'server_control_links' => islandora_jobs_monitor_get_master_control_links($server_id),
         )) : '',
