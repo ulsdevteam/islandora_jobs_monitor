@@ -106,7 +106,7 @@ This table stores the jobs that are currently being performed on any given gearm
 ## Maintainers/Sponsors
 Current maintainers:
 
-* [Brian Gillingham](https://github.com/bgilling)
+* [Willow Gillingham](https://github.com/bgilling)
 * [ULS Development Team](https://github.com/ulsdevteam)
 
 ## Development
