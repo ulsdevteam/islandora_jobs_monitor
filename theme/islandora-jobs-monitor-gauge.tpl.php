@@ -14,10 +14,10 @@
 
         var options = {
           width: 220, height: 88,
-          redFrom: 90, redTo: 100,
-          yellowFrom: 80, yellowTo: 90,
-          greenColor: '#c9bfa2',
-          greenFrom: 65, greenTo: 80,
+          redFrom: 85, redTo: 100,
+          yellowFrom: 61, yellowTo: 84,
+          greenColor: '#99bf72',
+          greenFrom: 1, greenTo: 60,
           minorTicks: 5
         };
 
