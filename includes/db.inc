@@ -220,6 +220,26 @@ function islandora_jobs_monitor_get_server_id_of_ip($ip_address) {
   return $server_id;
 }
 
+function islandora_jobs_monitor_incomplete_job_pid_not_this_server($pid, $server_id, $jobname) {
+  $link = islandora_jobs_monitor_get_databaselink('islandora_jobs_monitor');
+
+  $sql = "SELECT * FROM `host_gearman_job` " .
+    "WHERE `server_id` <> " . $server_id . " AND " .
+    "`PID` = '" . islandora_jobs_monitor_safe_qstring($link, $pid) . "' AND " .
+    "`job_name` = '" . islandora_jobs_monitor_safe_qstring($link, $jobname) . "' AND `completed` IS NULL";
+  $result = mysqli_query($link, $sql);
+  if (!$result) {
+    islandora_jobs_monitor_sql_error_die($link, $sql);
+  }
+  $rows = array();
+  if ($row = mysqli_fetch_assoc($result)) {
+    $rows[] = $row['server_id'];
+  }
+
+  mysqli_close($link);
+  return (count($rows) > 0);
+}
+
 /**
  * This will add the record to the `host_gearman_job` table for the current job.
  *

@@ -290,7 +290,9 @@ function islandora_jobs_monitor_islandora_job_started($payload) {
         }
       }
       if ($jobname && $pid) {
-        islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname);
+        if (!islandora_jobs_monitor_incomplete_job_pid_not_this_server($pid, $server_id, $jobname)) {
+          islandora_jobs_monitor_add_job_record($server_id, $pid, $jobname);
+        }
       }
     }
   }
