@@ -25,7 +25,7 @@ $db_name = get_config_value('mysql', 'jobs_database');
 $link = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
 if (mysqli_connect_errno()) {
     printf("Connect failed: %s\n", mysqli_connect_error());
-    exit();
+    exit(1);
 }
 
 /**
@@ -85,7 +85,7 @@ if ($server_id > 0) {
   exec($command, $output, $return);
   $gearman_running = (count($output) > 2) ? 1 : 0;
 
-  $command = 'df -P | grep "lv_root" | gawk \'{ print $4,$5 }\'';
+  $command = 'df -P | grep "rhel-tmp" | gawk \'{ print $4,$5 }\'';
   $disk_fields = str_replace("%", "", trim(shell_exec($command)));
   @list($avail_blocks, $disk_used_pct) = explode(" ", $disk_fields);
   $bytes_avail = 1024 * $avail_blocks;
